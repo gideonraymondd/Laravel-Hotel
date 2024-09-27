@@ -18,6 +18,7 @@ class Transaction extends Model
         'check_in',
         'check_out',
         'status',
+        'origin',
     ];
 
     public function user()

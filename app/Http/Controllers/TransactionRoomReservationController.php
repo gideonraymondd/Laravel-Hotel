@@ -104,6 +104,7 @@ class TransactionRoomReservationController extends Controller
 
         $request->validate([
             'downPayment' => 'required|numeric|gte:'.$minimumDownPayment,
+            'origin'=> 'required|string',
         ]);
 
         $occupiedRoomId = $this->getOccupiedRoomID($request->check_in, $request->check_out);

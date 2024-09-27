@@ -102,6 +102,24 @@
                                         </div>
                                     </div>
                                     <div class="row mb-3">
+                                        <label for="origin" class="col-sm-2 col-form-label">Origin</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control @error('origin') is-invalid @enderror" id="origin" name="origin">
+                                                <option value="">Select origin</option>
+                                                <option value="traveloka" {{ old('origin') == 'traveloka' ? 'selected' : '' }}>Traveloka</option>
+                                                <option value="tiket.com" {{ old('origin') == 'tiket.com' ? 'selected' : '' }}>Tiket.com</option>
+                                                <option value="booking.com" {{ old('origin') == 'booking.com' ? 'selected' : '' }}>Booking.com</option>
+                                                <option value="offline" {{ old('origin') == 'offline' ? 'selected' : '' }}>Offline</option>
+                                            </select>
+                                            @error('origin')
+                                                <div class="text-danger mt-1">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
                                         <div class="col-sm-2"></div>
                                         <div class="col-sm-10" id="showPaymentType"></div>
                                     </div>

@@ -19,6 +19,7 @@ class TransactionRepository implements TransactionRepositoryInterface
             'check_in' => $request->check_in,
             'check_out' => $request->check_out,
             'status' => 'Reservation',
+            'origin' => $request->origin,
         ]);
     }
 
