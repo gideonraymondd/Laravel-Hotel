@@ -15,6 +15,7 @@ class DashboardController extends Controller
             ->orderBy('id', 'DESC')
             ->get();
 
+        // Kirim variabel di sini
         return view('dashboard.index', [
             'transactions' => $transactions,
         ]);
