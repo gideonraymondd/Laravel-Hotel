@@ -38,43 +38,65 @@
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>#</th>
                                     <th>ID</th>
                                     <th>Customer</th>
                                     <th>Room</th>
-                                    <th>Check In</th>
-                                    <th>Check Out</th>
-                                    <th>Days</th>
+                                    <th>Order</th>
                                     <th>Total Price</th>
-                                    <th>Paid Off</th>
-                                    <th>Debt</th>
+                                    <th>Payment Status</th>
+                                    <th>Room Status</th>
+                                    <th>Order Status</th>
+                                    <th>Origin</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($transactions as $transaction)
                                     <tr>
-                                        <th>{{ ($transactions->currentpage() - 1) * $transactions->perpage() + $loop->index + 1 }}
-                                        </th>
                                         <td>{{ $transaction->id }}</td>
                                         <td>{{ $transaction->customer->name }}</td>
                                         <td>{{ $transaction->room->number }}</td>
-                                        <td>{{ Helper::dateFormat($transaction->check_in) }}</td>
-                                        <td>{{ Helper::dateFormat($transaction->check_out) }}</td>
-                                        <td>{{ $transaction->getDateDifferenceWithPlural($transaction->check_in, $transaction->check_out) }}
+                                        <td>
+                                            {{ Helper::dateFormat($transaction->check_in) }} - {{ Helper::dateFormat($transaction->check_out) }}
                                         </td>
                                         <td>{{ Helper::convertToRupiah($transaction->getTotalPrice()) }}
                                         </td>
                                         <td>
-                                            {{ Helper::convertToRupiah($transaction->getTotalPayment()) }}
-                                        </td>
-                                        <td>{{ $transaction->getTotalPrice() - $transaction->getTotalPayment() <= 0 ? '-' : Helper::convertToRupiah($transaction->getTotalPrice() - $transaction->getTotalPayment()) }}
+                                            @if ($transaction->isPaymentComplete())
+                                                <span class="text-success">Paid off</span>
+                                            @else
+                                                <span class="text-danger">outstanding</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0 {{$transaction->getTotalPrice() - $transaction->getTotalPayment() <= 0 ? 'disabled' : ''}}"
+                                            {{ $transaction->room_status }}</>
+                                        </td>
+                                        <td>
+                                            {{ $transaction->status }}</>
+                                        </td>
+                                        <td>
+                                            {{ $transaction->origin }}</>
+                                        </td>
+                                        <td>
+                                            <!-- Tombol Pay -->
+                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0 {{$transaction->getTotalPrice($transaction->room->price, $transaction->check_in, $transaction->check_out) - $transaction->getTotalPayment() <= 0 ? 'disabled' : ''}}"
                                                 href="{{ route('transaction.payment.create', ['transaction' => $transaction->id]) }}"
                                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Pay">
-                                                <i class="fas fa-money-bill-wave-alt"></i>
+                                                Pay
+                                            </a>
+
+                                            <!-- Tombol Change Status -->
+                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0"
+                                            href="{{ route('transaction.changeRoomStatus', ['transaction' => $transaction->id]) }}"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Change Status">
+                                                Change Status
+                                            </a>
+
+                                            <!-- Tombol Details -->
+                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0"
+                                            href="{{ route('transaction.show', ['transaction' => $transaction->id]) }}"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Details">
+                                                Details
                                             </a>
                                         </td>
                                     </tr>
@@ -116,6 +138,7 @@
                                     <th>Total Price</th>
                                     <th>Paid Off</th>
                                     <th>Debt</th>
+                                    <th>Origin</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -138,13 +161,15 @@
                                     </td>
                                     <td>{{ $transaction->getTotalPrice() - $transaction->getTotalPayment() <= 0 ? '-' : Helper::convertToRupiah($transaction->getTotalPrice($transaction->room->price, $transaction->check_in, $transaction->check_out) - $transaction->getTotalPayment()) }}
                                     </td>
+                                    <td>{{ $transaction->origin }}</td>
                                     <td>
                                         <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0 {{$transaction->getTotalPrice($transaction->room->price, $transaction->check_in, $transaction->check_out) - $transaction->getTotalPayment() <= 0 ? 'disabled' : ''}}"
                                             href="{{ route('transaction.payment.create', ['transaction' => $transaction->id]) }}"
                                             data-bs-toggle="tooltip" data-bs-placement="top" title="Pay">
-                                            <i class="fas fa-money-bill-wave-alt"></i>
+                                            Pay
                                         </a>
                                     </td>
+
                                 </tr>
                             @empty
                                 <tr>
