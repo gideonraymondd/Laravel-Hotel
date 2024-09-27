@@ -73,4 +73,17 @@ class Transaction extends Model
 
         return ($this->room->price * $dayDifference) * 0.15;
     }
+
+    public function isPaymentComplete()
+    {
+        // Dapatkan total harga transaksi
+        $totalPrice = $this->getTotalPrice();
+
+        // Dapatkan total pembayaran yang telah dilakukan
+        $totalPayment = $this->getTotalPayment();
+
+        // Periksa apakah total pembayaran sudah sama dengan atau lebih dari total harga
+        return $totalPayment >= $totalPrice;
+    }
+
 }
