@@ -26,7 +26,7 @@ class TransactionRepository implements TransactionRepositoryInterface
     public function getTransaction($request)
     {
         return Transaction::with('user', 'room', 'customer')
-            ->where('check_out', '>=', Carbon::now())
+            ->where('check_out', '>=', Carbon::now('Asia/Jakarta'))
             ->when(! empty($request->search), function ($query) use ($request) {
                 $query->where('id', '=', $request->search);
             })
