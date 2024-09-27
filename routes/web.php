@@ -85,6 +85,12 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], funct
     Route::get('/notification-to/{id}', [NotificationsController::class, 'routeTo'])->name('notification.routeTo');
 });
 
+// New Routes
+// Change Room Status
+// Route to show the form for changing room status
+Route::get('/transaction/{transaction}/change-room-status', [TransactionController::class, 'showChangeRoomStatusForm'])->name('transaction.changeRoomStatusForm');
+Route::post('/transaction/{transaction}/change-room-status', [TransactionController::class, 'changeRoomStatus'])->name('transaction.changeRoomStatus');
+
 // Login routes
 Route::view('/login', 'auth.login')->name('login');
 Route::post('/postLogin', [AuthController::class, 'postLogin'])->name('postlogin');
