@@ -86,4 +86,27 @@ class Transaction extends Model
         return $totalPayment >= $totalPrice;
     }
 
+    // Relasi dengan user
+    public function checkedInBy()
+    {
+        return $this->belongsTo(User::class, 'checked_in_by');
+    }
+
+    public function checkedOutBy()
+    {
+        return $this->belongsTo(User::class, 'checked_out_by');
+    }
+
+    public function cleanedBy()
+    {
+        return $this->belongsTo(User::class, 'cleaned_by');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+
+
 }
