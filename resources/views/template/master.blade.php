@@ -57,9 +57,9 @@
 
         </div>
     </main>
-    <footer class="footer mt-auto py-2 shadow-sm border-top mt-3" style="background: #f8f9fa; height:55px">
+    {{-- <footer class="footer mt-auto py-2 shadow-sm border-top mt-3" style="background: #f8f9fa; height:55px">
         @include('template.include._footer')
-    </footer>
+    </footer> --}}
     @vite('resources/js/app.js')
     @yield('footer')
 </body>
