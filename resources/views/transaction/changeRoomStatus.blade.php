@@ -27,6 +27,7 @@
                         <option value="check-in" {{ $transaction->room_status === 'check-in' ? 'selected' : '' }}>Check in</option>
                         <option value="check-out" {{ $transaction->room_status === 'check-out' ? 'selected' : '' }}>Check out</option>
                         <option value="cleaned" {{ $transaction->room_status === 'cleaned' ? 'selected' : '' }}>Clean</option>
+                        <option value="transfer" {{ $transaction->room_status === 'transfer' ? 'selected' : '' }}>Transfer</option>
                     @endif
                 </select>
                 <div id="error_room_status" class="text-danger error"></div>
@@ -62,6 +63,7 @@
                 selectElement.append('<option value="check-in">Check in</option>');
                 selectElement.append('<option value="check-out">Check out</option>');
                 selectElement.append('<option value="cleaned">Clean</option>');
+                selectElement.append('<option value="transfer">Transfer</option>');
             }
 
             // Set nilai default berdasarkan status saat ini

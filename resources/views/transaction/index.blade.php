@@ -176,11 +176,14 @@
                                         </a>
 
                                         <!-- Tombol Change Status -->
-                                        <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0"
-                                        href="{{ route('transaction.changeRoomStatus', ['transaction' => $transaction->id]) }}"
-                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Change Status">
+                                        <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0
+                                            {{ $transaction->status === 'Done' || $transaction->status === 'Transfer' ? 'disabled' : '' }}"
+                                            href="{{ route('transaction.changeRoomStatus', ['transaction' => $transaction->id]) }}"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Change Status"
+                                            {{ $transaction->status === 'Done' || $transaction->status === 'Transfer' ? 'aria-disabled=true tabindex=-1' : '' }}>
                                             Change Status
                                         </a>
+
 
                                         <!-- Tombol Details -->
                                         <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0"

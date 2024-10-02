@@ -53,6 +53,11 @@ class TransactionController extends Controller
         $transaction->checked_in_by = auth()->user()->id;
     }
 
+    // If the room status is 'check-in', update the checked_in_time
+    if ($transaction->room_status === 'transfer') {
+        $transaction->status = 'Transfer'; // Set to current time in WIB
+    }
+
     // If the room status is 'checkout', update the checked_out_time
     if ($transaction->room_status === 'check-out') {
         $transaction->checked_out_time = Carbon::now('Asia/Jakarta'); // Set to current time in WIB
@@ -84,6 +89,8 @@ class TransactionController extends Controller
             'transaction' => $transaction,
         ]);
     }
+
+
 
 
 }
