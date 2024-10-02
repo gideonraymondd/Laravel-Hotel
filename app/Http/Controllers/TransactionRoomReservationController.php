@@ -137,6 +137,8 @@ class TransactionRoomReservationController extends Controller
         return Transaction::where([['check_in', '<=', $stayFrom], ['check_out', '>=', $stayUntil]])
             ->orWhere([['check_in', '>=', $stayFrom], ['check_in', '<=', $stayUntil]])
             ->orWhere([['check_out', '>=', $stayFrom], ['check_out', '<=', $stayUntil]])
+            ->where('status', 'Reservation') // Tambahkan kondisi where status = 'Reservation'
             ->pluck('room_id');
     }
+
 }
