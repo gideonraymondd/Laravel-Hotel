@@ -12,15 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->foreignId('created_by')->constrained('users'); // Foreign key ke tabel 'users'
-            $table->foreignId('checked_in_by')->constrained('users'); // Foreign key ke tabel 'users'
-            $table->timestamp('checked_in_time'); // Tetap sebagai timestamp
-            $table->foreignId('checked_out_by')->constrained('users'); // Foreign key ke tabel 'users'
-            $table->timestamp('checked_out_time'); // Tetap sebagai timestamp
-            $table->foreignId('cleaned_by')->constrained('users'); // Foreign key ke tabel 'users'
-            $table->timestamp('cleaned_time'); // Tetap sebagai timestamp
-            $table->string('room_status');
+            $table->foreignId('created_by')->nullable()->constrained('users'); // Foreign key ke tabel 'users' menjadi nullable
+            $table->foreignId('checked_in_by')->nullable()->constrained('users'); // Foreign key ke tabel 'users' menjadi nullable
+            $table->timestamp('checked_in_time')->nullable(); // Tetap sebagai timestamp, menjadi nullable
+            $table->foreignId('checked_out_by')->nullable()->constrained('users'); // Foreign key ke tabel 'users' menjadi nullable
+            $table->timestamp('checked_out_time')->nullable(); // Tetap sebagai timestamp, menjadi nullable
+            $table->foreignId('cleaned_by')->nullable()->constrained('users'); // Foreign key ke tabel 'users' menjadi nullable
+            $table->timestamp('cleaned_time')->nullable(); // Tetap sebagai timestamp, menjadi nullable
+            $table->string('room_status')->nullable(); // Menjadi nullable
         });
+
     }
 
     /**

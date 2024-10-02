@@ -20,6 +20,7 @@ class TransactionRepository implements TransactionRepositoryInterface
             'check_out' => $request->check_out,
             'status' => 'Reservation',
             'origin' => $request->origin,
+            'created_by'=> auth()->user()->id,
         ]);
     }
 
