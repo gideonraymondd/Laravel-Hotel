@@ -24,6 +24,12 @@
                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                         </button>
+                        <button id="price-button" type="button" class="btn btn-sm btn-primary shadow-sm myBtn border rounded" data-bs-toggle="modal" data-bs-target="#priceModal">
+                            Update Prices
+                        </button>
+                        <button id="reset-button" type="button" class="btn btn-sm btn-warning shadow-sm myBtn border rounded" data-bs-toggle="modal" data-bs-target="#resetPriceModal">
+                            Reset to Normal Price
+                        </button>
                     </div>
                 </div>
             </div>
@@ -81,6 +87,48 @@
                                 </table>
                             </div>
                         </div>
+                        <!-- Modal -->
+                        <div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="priceModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="{{ route('rooms.updatePrices') }}" method="POST">
+                                        @csrf
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="priceIncrement" class="form-label">Increment Amount</label>
+                                                <input type="number" id="priceIncrement" name="price_increment" class="form-control" placeholder="Enter amount to increase">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Update Prices</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal Reset -->
+                        <div class="modal fade" id="resetPriceModal" tabindex="-1" aria-labelledby="resetPriceModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="resetPriceModalLabel">Reset Room Prices</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to reset all room prices to 250,000?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <form action="{{ route('rooms.resetPrices') }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-warning">Reset Prices</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card-footer">
                             <h3>Room</h3>
                         </div>
@@ -90,3 +138,18 @@
         </div>
     </div>
 @endsection
+
+<script>
+    document.getElementById('updatePricesButton').addEventListener('click', function() {
+        let incrementValue = document.getElementById('priceIncrement').value;
+        if (incrementValue) {
+            alert('Prices will be updated by ' + incrementValue);
+            // Here you can add your logic to update the prices, maybe an AJAX request or form submission.
+            // For now, just closing the modal
+            let priceModal = new bootstrap.Modal(document.getElementById('priceModal'));
+            priceModal.hide();
+        } else {
+            alert('Please enter an increment value.');
+        }
+    });
+</script>

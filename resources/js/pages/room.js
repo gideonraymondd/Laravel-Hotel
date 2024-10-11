@@ -53,12 +53,15 @@ $(function () {
                         <form class="btn btn-sm delete-room" method="POST"
                             id="delete-room-form-${roomId}"
                             action="/room/${roomId}">
+                            <input type="hidden" name="_method" value="DELETE"> <!-- Method override -->
+                            <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
                             <a class="btn btn-light btn-sm rounded shadow-sm border delete"
                                 href="#" room-id="${roomId}" room-role="room" data-bs-toggle="tooltip"
                                 data-bs-placement="top" title="Delete room">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </form>
+
                         <a class="btn btn-light btn-sm rounded shadow-sm border"
                             href="/room/${roomId}"
                             data-bs-toggle="tooltip" data-bs-placement="top"
@@ -78,35 +81,33 @@ $(function () {
         focus: true,
     });
 
-    $(document)
-        .on("click", ".delete", function () {
-            var room_id = $(this).attr("room-id");
-            var room_name = $(this).attr("room-name");
-            var room_url = $(this).attr("room-url");
-            const swalWithBootstrapButtons = Swal.mixin({
-                customClass: {
-                    confirmButton: "btn btn-success",
-                    cancelButton: "btn btn-danger",
-                },
-                buttonsStyling: false,
-            });
+    $(document).on("click", ".delete", function () {
+        var room_id = $(this).attr("room-id");
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-danger",
+            },
+            buttonsStyling: false,
+        });
 
-            swalWithBootstrapButtons
-                .fire({
-                    title: "Are you sure?",
-                    text: "Room will be deleted, You won't be able to revert this!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes, delete it!",
-                    cancelButtonText: "No, cancel! ",
-                    reverseButtons: true,
-                })
-                .then((result) => {
-                    if (result.isConfirmed) {
-                        $(`#delete-room-form-${room_id}`).submit();
-                    }
-                });
-        })
+        swalWithBootstrapButtons
+            .fire({
+                title: "Are you sure?",
+                text: "Room will be deleted, You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel! ",
+                reverseButtons: true,
+            })
+            .then((result) => {
+                if (result.isConfirmed) {
+                    $(`#delete-room-form-${room_id}`).submit(); // Submit form
+                }
+            });
+    })
+
         .on("click", "#add-button", async function () {
             modal.show();
 
@@ -179,17 +180,15 @@ $(function () {
             $(".select2").select2();
         })
         .on("submit", ".delete-room", async function (e) {
-            e.preventDefault();
+            e.preventDefault(); // Mencegah default form submission
 
             try {
                 const response = await $.ajax({
                     url: $(this).attr("action"),
                     data: $(this).serialize(),
-                    method: $(this).attr("method"),
+                    method: $(this).attr("method"), // Akan menggunakan DELETE
                     headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
                     },
                 });
 
@@ -203,8 +202,14 @@ $(function () {
                     timer: 1500,
                 });
 
-                datatable.ajax.reload();
-            } catch (e) {}
+                datatable.ajax.reload(); // Reload datatable
+            } catch (e) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: e.responseJSON.message,
+                });
+            }
         })
         .on("change", "#status", function () {
             datatable.ajax.reload();

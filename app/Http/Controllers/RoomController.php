@@ -13,6 +13,8 @@ use App\Repositories\Interface\RoomStatusRepositoryInterface;
 use App\Repositories\Interface\TypeRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class RoomController extends Controller
 {
@@ -99,25 +101,54 @@ class RoomController extends Controller
         ]);
     }
 
-    public function destroy(Room $room, ImageRepositoryInterface $imageRepository)
+    public function destroy(Room $room)
+{
+    Log::info('Start deleting room: '.$room->id);
+
+    try {
+        // Hapus room dari database
+        Log::info('Deleting room from database: '.$room->id);
+        $room->delete();
+
+        Log::info('Room deleted successfully');
+        return response()->json([
+            'message' => 'Room number '.$room->number.' deleted!',
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error deleting room: '.$e->getMessage());
+        return response()->json([
+            'message' => 'Room '.$room->number.' cannot be deleted! Error: '.$e->getMessage(),
+        ], 500);
+    }
+}
+
+public function updatePrices(Request $request)
     {
-        try {
-            $room->delete();
+        // Validasi input increment price
+        $request->validate([
+            'price_increment' => 'required|numeric',
+        ]);
 
-            $path = 'img/room/'.$room->number;
-            $path = public_path($path);
+        // Ambil nilai kenaikan harga
+        $increment = $request->input('price_increment');
 
-            if (is_dir($path)) {
-                $imageRepository->destroy($path);
-            }
+        // Update harga di tabel 'rooms'
+        Room::query()->update([
+            'price' => \DB::raw("price + {$increment}")
+        ]);
 
-            return response()->json([
-                'message' => 'Room number '.$room->number.' deleted!',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Customer '.$room->number.' cannot be deleted! Error Code:'.$e->errorInfo[1],
-            ], 500);
-        }
+        // Redirect ke halaman yang sama dengan pesan sukses
+        return redirect()->back()->with('success', 'Room prices updated successfully!');
+    }
+
+    public function resetPrices(Request $request)
+    {
+        // Set semua harga kamar menjadi 250,000
+        Room::query()->update([
+            'price' => 250000
+        ]);
+
+        // Redirect ke halaman yang sama dengan pesan sukses
+        return redirect()->back()->with('success', 'Room prices reset to 250,000 successfully!');
     }
 }
