@@ -19,6 +19,11 @@ class Transaction extends Model
         'check_out',
         'status',
         'origin',
+        'created_by',
+        'created_at',
+        'checked_in_time',
+        'checked_out_time',
+        'cleaned_time'
     ];
 
     public function user()

@@ -21,6 +21,10 @@ class TransactionRepository implements TransactionRepositoryInterface
             'status' => 'Reservation',
             'origin' => $request->origin,
             'created_by'=> auth()->user()->id,
+            'created_at' => Carbon::now('Asia/Jakarta'),
+            'checked_in_time' => null,
+            'checked_out_time' => null,
+            'cleaned_time' => null,
         ]);
     }
 
