@@ -53,6 +53,9 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin']], function () {
     Route::resource('customer', CustomerController::class);
     Route::resource('type', TypeController::class);
     Route::resource('room', RoomController::class);
+    Route::delete('/room/{room}', [RoomController::class, 'destroy']);
+    Route::post('/rooms/update-prices', [RoomController::class, 'updatePrices'])->name('rooms.updatePrices');
+    Route::post('/rooms/reset-prices', [RoomController::class, 'resetPrices'])->name('rooms.resetPrices');
     Route::resource('roomstatus', RoomStatusController::class);
     Route::resource('transaction', TransactionController::class);
     Route::resource('facility', FacilityController::class);
@@ -78,6 +81,7 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], funct
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->name('notification.markAllAsRead');
@@ -90,6 +94,8 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], funct
 // Route to show the form for changing room status
 Route::get('/transaction/{transaction}/change-room-status', [TransactionController::class, 'showChangeRoomStatusForm'])->name('transaction.changeRoomStatusForm');
 Route::post('/transaction/{transaction}/change-room-status', [TransactionController::class, 'changeRoomStatus'])->name('transaction.changeRoomStatus');
+
+// Dsahboard
 
 // Login routes
 Route::view('/login', 'auth.login')->name('login');
