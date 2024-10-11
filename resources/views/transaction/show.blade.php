@@ -70,8 +70,8 @@
                             <label class="col-sm-2 col-form-label">Check In At</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control"
-                                    value="{{ Helper::dateFormatTime($transaction->checked_in_time)}}"
-                                    readonly>
+                                value="{{ $transaction->checked_in_time ? Helper::dateFormatTime($transaction->checked_in_time) : '-' }}"
+                                readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -85,8 +85,8 @@
                             <label class="col-sm-2 col-form-label">Check Out At</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control"
-                                    value="{{ Helper::dateFormatTime($transaction->checked_out_time)}}"
-                                    readonly>
+                                value="{{ $transaction->checked_out_time ? Helper::dateFormatTime($transaction->checked_out_time) : '-' }}"
+                                readonly>
                             </div>
                         </div>
 
@@ -101,8 +101,8 @@
                             <label class="col-sm-2 col-form-label">Cleaned At</label>
                             <div class="col-sm-4">
                                 <input type="text" class="form-control"
-                                    value="{{ Helper::dateFormatTime($transaction->cleaned_time)}}"
-                                    readonly>
+                                value="{{ $transaction->cleaned_time ? Helper::dateFormatTime($transaction->cleaned_time) : '-' }}"
+                                readonly>
                             </div>
                         </div>
                     </div>
