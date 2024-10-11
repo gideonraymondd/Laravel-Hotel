@@ -2,6 +2,93 @@
 @section('title', 'Dashboard')
 @section('content')
     <div id="dashboard">
+            <h4 class="text-center text-lg-start">Dashboard</h4>        <div class="row d-flex align-items-stretch">
+            {{-- Reservation Pie Chart --}}
+            <div class="col-lg-4 mb-3 h-25">
+                <div class="row mb-3">
+                    <div class="col-lg-12">
+                        <div class="card shadow-sm border">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <!-- Masih menggunakan form -->
+                                <form id="reservationForm" method="GET" action="{{ route('dashboard.index') }}" class="mb-0 w-100">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <h4 class="mb-0">Reservations</h4>
+                                        <select id="timePeriod" name="timePeriod" class="form-select flex-grow-1" onchange="this.form.submit()" style="width: auto; margin-left: 10px; min-width: 150px;">
+                                            <option value="1d" {{ $timePeriod === '1d' ? 'selected' : '' }}>1D</option>
+                                            <option value="1m" {{ $timePeriod === '1m' ? 'selected' : '' }}>1M</option>
+                                            <option value="custom" {{ $timePeriod === 'custom' ? 'selected' : '' }}>Custom</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Custom date inputs -->
+                                        <div id="customDateInput" class="px-3 py-2" style="visibility: {{ $timePeriod === 'custom' ? 'visible' : 'hidden' }}; opacity: {{ $timePeriod === 'custom' ? '1' : '0' }}; height: {{ $timePeriod === 'custom' ? 'auto' : '0' }}; transition: opacity 0.3s ease; background-color: #f8f9fa; border-radius: 0.25rem; width: 100%; z-index: 0;">
+                                            <div class="d-flex justify-content-start align-items-center mb-2">
+                                                <input type="date" id="startDate" name="startDate" class="form-control d-inline-block w-auto me-3" required>
+                                                <input type="date" id="endDate" name="endDate" class="form-control d-inline-block w-auto" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary px-3 py">Terapkan</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-body">
+                                @if ($dataForPieChart['checkin'] == 0 && $dataForPieChart['checkout'] == 0 && $dataForPieChart['reserved'] == 0)
+                                    <!-- Tampilkan pesan jika data tidak ada -->
+                                    <p class="text-center">Data belum ada.</p>
+                                @else
+                                    <!-- Tampilkan chart jika ada data -->
+                                    <canvas id="reservationPieChart" style="max-width: 10rem; height: 12rem;"></canvas>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Monthly Guests Chart --}}
+            <div class="col-lg-8 mb-3">
+                <div class="row mb-3">
+                    <div class="col-lg-12">
+                        <div class="card shadow-sm border">
+                            <div class="card-header border-0">
+                                <div class="d-flex justify-content-between">
+                                    <h3 class="card-title">Monthly Guests Chart</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <p class="d-flex flex-column">
+                                        {{-- <span class="text-bold text-lg">Belum</span> --}}
+                                        {{-- <span>Total Guests at {{ Helper::thisMonth() . '/' . Helper::thisYear() }}</span> --}}
+                                    </p>
+                                    {{-- <p class="ml-auto d-flex flex-column text-right">
+                                    <span class="text-success">
+                                        <i class="fas fa-arrow-up"></i> Belum
+                                    </span>
+                                    <span class="text-muted">Since last month</span>
+                                </p> --}}
+                                </div>
+                                <div class="position-relative mb-4">
+                                    <canvas this-year="{{ Helper::thisYear() }}" this-month="{{ Helper::thisMonth() }}"
+                                        id="visitors-chart" height="400" width="100%" class="chartjs-render-monitor"
+                                        style="display: block; width: 249px; height: 200px;"></canvas>
+                                </div>
+                                <div class="d-flex flex-row justify-content-between">
+                                    <span class="mr-2">
+                                        <i class="fas fa-square text-primary"></i> {{ Helper::thisMonth() }}
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-square text-gray"></i> Last month
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-lg-6 mb-3">
                 {{-- Room Status --}}
@@ -201,49 +288,40 @@
                 </div>
 
 
-                {{-- Monthly Guests Chart --}}
-                <div class="row mb-3">
-                    <div class="col-lg-12">
-                        <div class="card shadow-sm border">
-                            <div class="card-header border-0">
-                                <div class="d-flex justify-content-between">
-                                    <h3 class="card-title">Monthly Guests Chart</h3>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <p class="d-flex flex-column">
-                                        {{-- <span class="text-bold text-lg">Belum</span> --}}
-                                        {{-- <span>Total Guests at {{ Helper::thisMonth() . '/' . Helper::thisYear() }}</span> --}}
-                                    </p>
-                                    {{-- <p class="ml-auto d-flex flex-column text-right">
-                                    <span class="text-success">
-                                        <i class="fas fa-arrow-up"></i> Belum
-                                    </span>
-                                    <span class="text-muted">Since last month</span>
-                                </p> --}}
-                                </div>
-                                <div class="position-relative mb-4">
-                                    <canvas this-year="{{ Helper::thisYear() }}" this-month="{{ Helper::thisMonth() }}"
-                                        id="visitors-chart" height="400" width="100%" class="chartjs-render-monitor"
-                                        style="display: block; width: 249px; height: 200px;"></canvas>
-                                </div>
-                                <div class="d-flex flex-row justify-content-between">
-                                    <span class="mr-2">
-                                        <i class="fas fa-square text-primary"></i> {{ Helper::thisMonth() }}
-                                    </span>
-                                    <span>
-                                        <i class="fas fa-square text-gray"></i> Last month
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
 @endsection
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var ctx = document.getElementById('reservationPieChart').getContext('2d');
+        var reservationPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Check-In', 'Check-Out', 'Reserved'],
+                datasets: [{
+                    data: [{{ $dataForPieChart['checkin'] }}, {{ $dataForPieChart['checkout'] }}, {{ $dataForPieChart['reserved'] }}],
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+                    hoverBackgroundColor: ['#0056b3', '#1e7e34', '#d39e00']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+
+
 {{-- @section('footer')
     <script src="{{ asset('style/js/chart.min.js') }}"></script>
     <script src="{{ asset('style/js/guestsChart.js') }}"></script>
@@ -264,3 +342,6 @@
             })
     </script>
 @endsection --}}
+
+
+
