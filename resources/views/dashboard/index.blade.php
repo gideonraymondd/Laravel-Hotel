@@ -2,92 +2,157 @@
 @section('title', 'Dashboard')
 @section('content')
     <div id="dashboard">
-            <h4 class="text-center text-lg-start">Dashboard</h4>        <div class="row d-flex align-items-stretch">
+        <h4 class="text-center p-2 d-block d-sm-none">Dashboard</h4>
+        <div class="row m-1">
+            <div class="col-sm-12 col-md-6 col-lg-4 p-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Total Revenue</h5>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-text text-center">{{ Helper::convertToRupiah ($totalRevenueThisMonth) }}</h2>
+                        @if($revenueDifference > 0)
+                            <p class="card-text text-center text-success">
+                                <i class="fas fa-arrow-up"></i> {{ Helper::convertToRupiah(($revenueDifference )) }} compared to last month
+                            </p>
+                        @else
+                            <p class="card-text text-center text-danger">
+                                <i class="fas fa-arrow-down"></i> {{ Helper::convertToRupiah ($revenueDifference ) }}% compared to last month
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-4 p-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Total Customers</h5>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-text text-center">{{ ($totalCustomersThisMonth) }}</h2>
+                        @if($customersDifference > 0)
+                            <p class="card-text text-center text-success">
+                                <i class="fas fa-arrow-up"></i> {{ (($customersDifference )) }} compared to last month
+                            </p>
+                        @else
+                            <p class="card-text text-center text-danger">
+                                <i class="fas fa-arrow-down"></i> {{ ($customersDifference ) }}% compared to last month
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-4 p-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Total Revenue</h5>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-text text-center">{{  ($totalBookingsThisMonth) }}</h2>
+                        @if($bookingsDifference > 0)
+                            <p class="card-text text-center text-success">
+                                <i class="fas fa-arrow-up"></i> {{ (($bookingsDifference )) }} compared to last month
+                            </p>
+                        @else
+                            <p class="card-text text-center text-danger">
+                                <i class="fas fa-arrow-down"></i> {{ ($bookingsDifference ) }}% compared to last month
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row m-1">
             {{-- Reservation Pie Chart --}}
-            <div class="col-lg-4 mb-3 h-25">
-                <div class="row mb-3">
-                    <div class="col-lg-12">
-                        <div class="card shadow-sm border">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <!-- Masih menggunakan form -->
-                                <form id="reservationForm" method="GET" action="{{ route('dashboard.index') }}" class="mb-0 w-100">
-                                    <div class="d-flex justify-content-between align-items-center w-100">
-                                        <h4 class="mb-0">Reservations</h4>
-                                        <select id="timePeriod" name="timePeriod" class="form-select flex-grow-1" onchange="this.form.submit()" style="width: auto; margin-left: 10px; min-width: 150px;">
-                                            <option value="1d" {{ $timePeriod === '1d' ? 'selected' : '' }}>1D</option>
-                                            <option value="1m" {{ $timePeriod === '1m' ? 'selected' : '' }}>1M</option>
-                                            <option value="custom" {{ $timePeriod === 'custom' ? 'selected' : '' }}>Custom</option>
-                                        </select>
-                                    </div>
+            <div class="col-lg-5 col-md-6 col-12 mb-3">
+                <div class="card shadow-sm border h-100" style="max-height: 400px;">
+                    <div class="card-header d-flex justify-content-between align-items-center ">
+                        <!-- Form Reservation -->
+                        <form id="reservationForm" method="GET" action="{{ route('dashboard.index') }}" class="mb-0 w-100">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <h4 class="mb-0">Reservations</h4>
+                                <select id="timePeriod" name="timePeriod" class="form-select" onchange="this.form.submit()" style="width: auto; margin-left: 10px; min-width: 150px;">
+                                    <option value="1d" {{ $timePeriod === '1d' ? 'selected' : '' }}>1D</option>
+                                    <option value="1m" {{ $timePeriod === '1m' ? 'selected' : '' }}>1M</option>
+                                    <option value="1w" {{ $timePeriod === '1w' ? 'selected' : '' }}>1W</option>
+                                    <option value="custom" {{ $timePeriod === 'custom' ? 'selected' : '' }}>Custom</option>
+                                </select>
+                            </div>
 
-                                    <div class="row">
-                                        <!-- Custom date inputs -->
-                                        <div id="customDateInput" class="px-3 py-2" style="visibility: {{ $timePeriod === 'custom' ? 'visible' : 'hidden' }}; opacity: {{ $timePeriod === 'custom' ? '1' : '0' }}; height: {{ $timePeriod === 'custom' ? 'auto' : '0' }}; transition: opacity 0.3s ease; background-color: #f8f9fa; border-radius: 0.25rem; width: 100%; z-index: 0;">
-                                            <div class="d-flex justify-content-start align-items-center mb-2">
-                                                <input type="date" id="startDate" name="startDate" class="form-control d-inline-block w-auto me-3" required>
-                                                <input type="date" id="endDate" name="endDate" class="form-control d-inline-block w-auto" required>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary px-3 py">Terapkan</button>
-                                        </div>
+                            <div class="row">
+                                <!-- Custom date inputs -->
+                                <div id="customDateInput"
+                                    style="visibility: {{ $timePeriod === 'custom' ? 'visible' : 'hidden' }};
+                                           opacity: {{ $timePeriod === 'custom' ? '1' : '0' }};
+                                           height: {{ $timePeriod === 'custom' ? 'auto' : '0' }};
+                                           transition: opacity 0.3s ease; background-color: #f8f9fa;
+                                           border-radius: 0.25rem; width: 100%; z-index: 0;">
+                                    <div class="d-flex flex-column flex-md-row justify-content-start align-items-start align-items-md-center mb-2">
+                                        <input type="date" id="startDate" name="startDate" class="form-control d-inline-block w-auto me-md-3 mb-2 mb-md-0" required>
+                                        <input type="date" id="endDate" name="endDate" class="form-control d-inline-block w-auto" required>
                                     </div>
-                                </form>
+                                    <button type="submit" class="btn btn-primary px-2 py-1">Terapkan</button>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                @if ($dataForPieChart['checkin'] == 0 && $dataForPieChart['checkout'] == 0 && $dataForPieChart['reserved'] == 0)
-                                    <!-- Tampilkan pesan jika data tidak ada -->
-                                    <p class="text-center">Data belum ada.</p>
-                                @else
-                                    <!-- Tampilkan chart jika ada data -->
-                                    <canvas id="reservationPieChart" style="max-width: 10rem; height: 12rem;"></canvas>
-                                @endif
-                            </div>
-                        </div>
+                        </form>
+                    </div>
+                    <div class="card-body ">
+                        @if ($dataForPieChart['checkin'] == 0 && $dataForPieChart['checkout'] == 0 && $dataForPieChart['reserved'] == 0)
+                            <!-- Tampilkan pesan jika data tidak ada -->
+                            <p class="text-center">Data belum ada.</p>
+                        @else
+                            <!-- Tampilkan chart jika ada data -->
+                            <canvas id="reservationPieChart" style="max-width: 10rem; height: 8rem;"></canvas>
+                        @endif
                     </div>
                 </div>
             </div>
 
             {{-- Monthly Guests Chart --}}
-            <div class="col-lg-8 mb-3">
-                <div class="row mb-3">
-                    <div class="col-lg-12">
-                        <div class="card shadow-sm border">
-                            <div class="card-header border-0">
-                                <div class="d-flex justify-content-between">
-                                    <h3 class="card-title">Monthly Guests Chart</h3>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <p class="d-flex flex-column">
-                                        {{-- <span class="text-bold text-lg">Belum</span> --}}
-                                        {{-- <span>Total Guests at {{ Helper::thisMonth() . '/' . Helper::thisYear() }}</span> --}}
-                                    </p>
-                                    {{-- <p class="ml-auto d-flex flex-column text-right">
+            <div class="col-lg-4 col-md-6 col-12 mb-3">
+                <div class="card shadow-sm border h-100" style="max-height: 400px;">
+                    <div class="card-header border-0 py-2">
+                        <div class="d-flex justify-content-between">
+                            <h3 class="card-title">Monthly Guests Chart</h3>
+                        </div>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between">
+                            <p class="d-flex flex-column">
+                                <span>Total Bookings at {{ Helper::thisMonth() . '/' . Helper::thisYear() }}</span>
+                            </p>
+                            <p class="ml-auto d-flex flex-column text-right">
+                                @if($difference > 0)
                                     <span class="text-success">
-                                        <i class="fas fa-arrow-up"></i> Belum
+                                        <i class="fas fa-arrow-up"></i> {{ $difference }} Orders
                                     </span>
-                                    <span class="text-muted">Since last month</span>
-                                </p> --}}
-                                </div>
-                                <div class="position-relative mb-4">
-                                    <canvas this-year="{{ Helper::thisYear() }}" this-month="{{ Helper::thisMonth() }}"
-                                        id="visitors-chart" height="400" width="100%" class="chartjs-render-monitor"
-                                        style="display: block; width: 249px; height: 200px;"></canvas>
-                                </div>
-                                <div class="d-flex flex-row justify-content-between">
-                                    <span class="mr-2">
-                                        <i class="fas fa-square text-primary"></i> {{ Helper::thisMonth() }}
+                                @else
+                                    <span class="text-danger">
+                                        <i class="fas fa-arrow-down"></i> {{ $difference }} Orders
                                     </span>
-                                    <span>
-                                        <i class="fas fa-square text-gray"></i> Last month
-                                    </span>
-                                </div>
-                            </div>
+                                @endif
+                                <span class="text-muted">Since last month</span>
+                            </p>
+                        </div>
+                        <div class="position-relative mb-4">
+                            <canvas this-year="{{ Helper::thisYear() }}" this-month="{{ Helper::thisMonth() }}"
+                                id="visitors-chart" height="200" width="100%" class="chartjs-render-monitor"></canvas>
+                        </div>
+                        <div class="d-flex flex-row justify-content-between">
+                            <span class="mr-2">
+                                <i class="fas fa-square text-primary"></i> {{ Helper::thisMonth() }}
+                            </span>
+                            <span>
+                                <i class="fas fa-square text-gray"></i> Last month
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Room Status --}}
         </div>
+
 
         <div class="row">
             <div class="col-lg-6 mb-3">
