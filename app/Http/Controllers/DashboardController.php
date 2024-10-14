@@ -176,6 +176,27 @@ class DashboardController extends Controller
     $totalBookingsLastMonth = Transaction::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->count();
     $bookingsDifference = $totalBookingsThisMonth - $totalBookingsLastMonth; // Selisih Booking
 
+    // Roooms
+
+    // Twin
+    $totalTwin = Room::where('type_id', 8 )->count();
+    $TwinOccupiedRooms = Transaction::where('status', 'Reservation')
+    ->where(function ($query) use ($selectedDate) {
+        $query->whereDate('check_in', '<=', $selectedDate)
+                ->whereDate('check_out', '>=', $selectedDate);
+    })
+    ->whereIn('room_id', [3, 30, 31, 32, 33]) // Tambahkan kondisi pengecualian room_id
+    ->count(); // Hitung total jumlah kamar yang terisi
+
+    $totalDouble = Room::where('type_id', 9 )->count();
+    $DoubleOccupiedRooms = Transaction::where('status', 'Reservation')
+    ->where(function ($query) use ($selectedDate) {
+        $query->whereDate('check_in', '<=', $selectedDate)
+                ->whereDate('check_out', '>=', $selectedDate);
+    })
+    ->whereNotIn('room_id', [3, 30, 31, 32, 33]) // Tambahkan kondisi pengecualian room_id
+    ->count(); // Hitung total jumlah kamar yang terisi
+
 
     // Kirim variabel transaksi dan kamar kosong ke view
     return view('dashboard.index', [
@@ -187,7 +208,7 @@ class DashboardController extends Controller
         'occupiedRooms' => $occupiedRooms, // Kamar yang sedang terisi
         'allRooms' => $allRooms, // Semua kamar
         'date' => $date, // Kirim tanggal ke view
-        // 'filter' => $filter, // Data check-in hari ini
+        'filter' => $filter, // Data check-in hari ini
         'filterData' => $filterData, // Data check-out,clean,checkin by date
         // 'today' => $today, // Data cleaned hari ini
         'dataForPieChart' => $dataForPieChart, // Kirim data untuk chart ke view
@@ -204,6 +225,11 @@ class DashboardController extends Controller
         'revenueDifference' => $revenueDifference,
         'customersDifference' => $customersDifference,
         'bookingsDifference' => $bookingsDifference,
+        // Rooms
+        'totalTwin' => $totalTwin,
+        'TwinOccupiedRooms' => $TwinOccupiedRooms,
+        'totalDouble' => $totalDouble,
+        'DoubleOccupiedRooms' => $DoubleOccupiedRooms,
     ]);
 }
 
