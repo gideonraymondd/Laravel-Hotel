@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Repositories\Interface\TransactionRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
+use App\Models\Room;
 
 
 class TransactionController extends Controller
@@ -20,9 +21,51 @@ class TransactionController extends Controller
         $transactions = $this->transactionRepository->getTransaction($request);
         $transactionsExpired = $this->transactionRepository->getTransactionExpired($request);
 
+        // Pindahan Dashboard :
+
+        // Room Status By Date
+
+        // Ambil tanggal dari input, gunakan hari ini jika tidak ada input
+        $date = $request->input('date', Carbon::now()->format('Y-m-d'));
+
+        // Mengubah input tanggal menjadi objek Carbon sesuai timezone Jakarta
+        $selectedDate = Carbon::createFromFormat('Y-m-d', $date, 'Asia/Jakarta');
+        // Ambil semua transaksi yang statusnya "reserved" pada tanggal yang dipilih
+        $occupiedRooms = Transaction::where('status', 'Reservation')
+            ->where(function ($query) use ($selectedDate) {
+                $query->whereDate('check_in', '<=', $selectedDate)
+                    ->whereDate('check_out', '>=', $selectedDate);
+            })
+            ->pluck('room_id'); // Hanya ambil room_id yang sedang ditempati
+
+        // Ambil semua kamar dengan pagination
+        $allRooms = Room::simplePaginate(8); // 8 ruangan per halaman
+
+         //Check in check out dan cleaned by Date
+
+        // Ambil filter dari query string, default ke 'check_in'
+        $filter = $request->input('filter', 'check_in');
+        $today = Carbon::today()->format('Y-m-d');
+        $filterData = null;
+
+        // Filter data berdasarkan pilihan user
+        if ($filter === 'check_in') {
+            $filterData = Transaction::whereDate('checked_in_time', $today)->get();
+        } elseif ($filter === 'check_out') {
+            $filterData = Transaction::whereDate('checked_out_time', $today)->get();
+        } elseif ($filter === 'cleaned') {
+            $filterData = Transaction::whereDate('cleaned_time', $today)->get();
+        }
+
+
         return view('transaction.index', [
             'transactions' => $transactions,
             'transactionsExpired' => $transactionsExpired,
+            'occupiedRooms' => $occupiedRooms, // Kamar yang sedang terisi
+            'allRooms' => $allRooms, // Semua kamar
+            'date' => $date, // Kirim tanggal ke view
+            'filterData' => $filterData, // Data check-out,clean,checkin by date
+            'filter' => $filter, // Data check-in hari ini
         ]);
     }
 

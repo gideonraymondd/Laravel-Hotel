@@ -1,6 +1,7 @@
 @extends('template.master')
 @section('title', 'Reservation')
 @section('content')
+    {{-- Head  --}}
     <div class="row mt-2 mb-2">
         <div class="col-lg-6 mb-2">
             <div class="d-grid gap-2 d-md-block">
@@ -25,14 +26,111 @@
             </form>
         </div>
     </div>
-    <div class="row my-2 mt-4 ms-1">
-        <div class="col-lg-12">
-            <h5>Active Guests: </h5>
+
+    <div class="row mb-3">
+        {{-- Room --}}
+        <div class="col-lg-5">
+            <div class="card shadow-sm border">
+                <div class="card-header">
+                    <h4>Rooms</h4>
+                    <form action="{{ route('dashboard.index') }}" method="GET" class="mb-3">
+                        <div class="form-group">
+                            <label for="date">Pilih Tanggal:</label>
+                            <input type="date" id="date" name="date" class="form-control" value="{{ $date }}"
+                            min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
+
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2">Cek Status Kamar</button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach ($allRooms as $room)
+                            <div class="col-6 col-md-3 mb-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title">No: {{ $room->number }}</h5>
+                                        @if ($occupiedRooms->contains($room->id))
+                                            <span class="badge badge-danger text-dark">Terisi</span>
+                                        @else
+                                            <span class="badge badge-success text-dark">Kosong</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $allRooms->links() }} <!-- Menampilkan navigasi pagination -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- Room Status --}}
+        <div class="col-lg-7">
+            <!-- Tabel Status Kamar -->
+            <div class="card shadow-sm border">
+                <div class="card-header">
+                    <h4>Room Status Today</h4>
+                    <!-- Tombol Filter -->
+                    <div class="btn-group mb-3">
+                        <a href="{{ route('transaction.index', ['filter' => 'check_in']) }}" class="btn btn-primary">Check-In</a>
+                        <a href="{{ route('transaction.index', ['filter' => 'check_out']) }}" class="btn btn-success">Check-Out</a>
+                        <a href="{{ route('transaction.index', ['filter' => 'cleaned']) }}" class="btn btn-warning">Cleaned</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nomor Ruangan</th>
+                                <th>Lantai</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($filterData as $transaction)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $transaction->room->number }}</td>
+                                    <td>{{ $transaction->room->floor }}</td>
+                                    <td>
+                                        @if ($filter === 'check_in')
+                                            <span class="badge badge-primary">Check-In</span>
+                                        @elseif ($filter === 'check_out')
+                                            <span class="badge badge-success">Check-Out</span>
+                                        @elseif ($filter === 'cleaned')
+                                            <span class="badge badge-warning">Cleaned</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($filter === 'check_in')
+                                            {{ $transaction->check_in }}
+                                        @elseif ($filter === 'check_out')
+                                            {{ $transaction->check_out }}
+                                        @elseif ($filter === 'cleaned')
+                                            {{ $transaction->cleaned_date }}
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
+    <div class="row mb-3">
+        {{-- Order --}}
+        <div class="col lg-12">
+            <div class="card shadow-sm border">
+                <div class="card-header">
+                    <h4>Active Guest</h4>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
