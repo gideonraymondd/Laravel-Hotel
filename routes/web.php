@@ -68,6 +68,11 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin']], function () {
 
     Route::get('/get-dialy-guest-chart-data', [ChartController::class, 'dailyGuestPerMonth']);
     Route::get('/get-dialy-guest/{year}/{month}/{day}', [ChartController::class, 'dailyGuest'])->name('chart.dailyGuest');
+
+    // Transaction History
+    Route::get('/history', [TransactionController::class, 'history'])->name('transaction.history');
+
+
 });
 
 Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], function () {
@@ -87,6 +92,8 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], funct
     Route::get('/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->name('notification.markAllAsRead');
 
     Route::get('/notification-to/{id}', [NotificationsController::class, 'routeTo'])->name('notification.routeTo');
+
+
 });
 
 // New Routes
@@ -94,6 +101,7 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], funct
 // Route to show the form for changing room status
 Route::get('/transaction/{transaction}/change-room-status', [TransactionController::class, 'showChangeRoomStatusForm'])->name('transaction.changeRoomStatusForm');
 Route::post('/transaction/{transaction}/change-room-status', [TransactionController::class, 'changeRoomStatus'])->name('transaction.changeRoomStatus');
+
 
 // Dsahboard
 
