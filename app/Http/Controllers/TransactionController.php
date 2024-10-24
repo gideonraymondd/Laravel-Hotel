@@ -18,8 +18,7 @@ class TransactionController extends Controller
 
     public function index(Request $request)
     {
-        $transactions = $this->transactionRepository->getTransaction($request);
-        $transactionsExpired = $this->transactionRepository->getTransactionExpired($request);
+        $transactions = $this->transactionRepository->getTransactionPagination($request)->simplePaginate(3);
 
         // Pindahan Dashboard :
 
@@ -43,24 +42,50 @@ class TransactionController extends Controller
 
          //Check in check out dan cleaned by Date
 
-        // Ambil filter dari query string, default ke 'check_in'
+        // // Ambil filter dari query string, default ke 'check_in'
+        // $filter = $request->input('filter', 'check_in');
+        // $today = Carbon::today()->format('Y-m-d');
+        // $filterData = null;;
+
+        // $perPage = 10;
+
+        // // Filter data berdasarkan pilihan user
+        // if ($filter === 'check_in') {
+        //     $filterData = Transaction::whereDate('checked_in_time', $today)->get();
+        // } elseif ($filter === 'check_out') {
+        //     $filterData = Transaction::whereDate('checked_out_time', $today)->get();
+        // } elseif ($filter === 'cleaned') {
+        //     $filterData = Transaction::whereDate('cleaned_time', $today)->get();
+        // }
+
         $filter = $request->input('filter', 'check_in');
         $today = Carbon::today()->format('Y-m-d');
-        $filterData = null;
+        $perPage = 10; // Atur jumlah item per halaman
 
         // Filter data berdasarkan pilihan user
         if ($filter === 'check_in') {
-            $filterData = Transaction::whereDate('checked_in_time', $today)->get();
+            $filterData = Transaction::whereDate('checked_in_time', $today)
+                ->with('room') // Pastikan relasi room dimuat
+                ->paginate($perPage)
+                ->appends($request->all()); // Menjaga query string saat pagination
         } elseif ($filter === 'check_out') {
-            $filterData = Transaction::whereDate('checked_out_time', $today)->get();
+            $filterData = Transaction::whereDate('checked_out_time', $today)
+                ->with('room') // Pastikan relasi room dimuat
+                ->paginate($perPage)
+                ->appends($request->all());
         } elseif ($filter === 'cleaned') {
-            $filterData = Transaction::whereDate('cleaned_time', $today)->get();
+            $filterData = Transaction::whereDate('cleaned_time', $today)
+                ->with('room') // Pastikan relasi room dimuat
+                ->paginate($perPage)
+                ->appends($request->all());
+        } else {
+            $filterData = Transaction::with('room')->paginate($perPage); // Jika filter tidak dikenali
         }
+
 
 
         return view('transaction.index', [
             'transactions' => $transactions,
-            'transactionsExpired' => $transactionsExpired,
             'occupiedRooms' => $occupiedRooms, // Kamar yang sedang terisi
             'allRooms' => $allRooms, // Semua kamar
             'date' => $date, // Kirim tanggal ke view
@@ -137,6 +162,29 @@ class TransactionController extends Controller
     public function history()
     {
         $transactions = Transaction::with(['user', 'customer', 'room', 'payment'])->get();
+        $transactions = Transaction::query()->simplePaginate(10);
+
+        return view('transaction.history', compact('transactions'));
+    }
+
+    public function filter(Request $request)
+    {
+        // Dapatkan semua transaksi atau hanya yang expired
+        $transactions = Transaction::query();
+
+        if ($request->filterExpired == 'expired') {
+            $transactions = $transactions->where('check_out', '<', now());
+        }
+        elseif ($request->filterExpired == 'current') {
+            // Menampilkan transaksi yang saat ini sedang berlangsung
+            $transactions = $transactions->where('check_in', '<=', now())
+                                        ->where('check_out', '>=', now());
+        }
+
+        // Gunakan pagination langsung tanpa get()
+        // $transactions = $transactions->simplePaginate(6);
+        $transactions = Transaction::query()->simplePaginate(10);
+
         return view('transaction.history', compact('transactions'));
     }
 

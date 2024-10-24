@@ -39,6 +39,18 @@ class TransactionRepository implements TransactionRepositoryInterface
             ->appends($request->all());
     }
 
+    public function getTransactionPagination($request)
+    {
+    return Transaction::with('user', 'room', 'customer')
+        ->where('check_out', '>=', Carbon::now('Asia/Jakarta'))
+        ->when(!empty($request->search), function ($query) use ($request) {
+            $query->where('id', '=', $request->search);
+        })
+        ->orderBy('check_out', 'ASC')
+        ->orderBy('id', 'DESC');
+    }
+
+
     public function getTransactionExpired($request)
     {
         return Transaction::with('user', 'room', 'customer')->where('check_out', '<', Carbon::now())

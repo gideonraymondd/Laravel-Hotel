@@ -160,7 +160,7 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        {{ $transactions->onEachSide(2)->links('template.paginationlinks') }}
+                        {{ $transactions->links() }}
                     </div>
                 </div>
             </div>
@@ -193,34 +193,44 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($filterData as $transaction)
+                            @if ($filterData->isEmpty())
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $transaction->room->number }}</td>
-                                    <td>{{ $transaction->room->floor }}</td>
-                                    <td>
-                                        @if ($filter === 'check_in')
-                                            <span class="badge badge-primary">Check-In</span>
-                                        @elseif ($filter === 'check_out')
-                                            <span class="badge badge-success">Check-Out</span>
-                                        @elseif ($filter === 'cleaned')
-                                            <span class="badge badge-warning">Cleaned</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($filter === 'check_in')
-                                            {{ $transaction->check_in }}
-                                        @elseif ($filter === 'check_out')
-                                            {{ $transaction->check_out }}
-                                        @elseif ($filter === 'cleaned')
-                                            {{ $transaction->cleaned_date }}
-                                        @endif
-                                    </td>
+                                    <td colspan="5" class="text-center">Tidak ada data yang ditemukan.</td>
                                 </tr>
-                            @endforeach
+                            @else
+                                @foreach ($filterData as $transaction)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $transaction->room->number }}</td>
+                                        <td>{{ $transaction->room->floor }}</td>
+                                        <td>
+                                            @if ($filter === 'check_in')
+                                                <span class="badge badge-primary">Check-In</span>
+                                            @elseif ($filter === 'check_out')
+                                                <span class="badge badge-success">Check-Out</span>
+                                            @elseif ($filter === 'cleaned')
+                                                <span class="badge badge-warning">Cleaned</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($filter === 'check_in')
+                                                {{ $transaction->check_in }}
+                                            @elseif ($filter === 'check_out')
+                                                {{ $transaction->check_out }}
+                                            @elseif ($filter === 'cleaned')
+                                                {{ $transaction->cleaned_date }}
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
+                    <div class="d-flex justify-content-center">
+                        {{ $filterData->links() }} <!-- Tampilkan link pagination -->
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
