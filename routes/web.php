@@ -71,7 +71,7 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin']], function () {
 
     // Transaction History
     Route::get('/history', [TransactionController::class, 'history'])->name('transaction.history');
-
+    Route::get('/transactions/filter', [TransactionController::class, 'filter'])->name('transaction.filter');
 
 });
 
