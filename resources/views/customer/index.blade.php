@@ -23,10 +23,20 @@
             color: #212529
         }
 
+        .chart-canvas {
+            width: 100% !important;
+            max-width: 300px; /* Agar tidak terlalu besar */
+            max-height: 300px;
+            aspect-ratio: 1 / 1;
+            }
+
+
+
     </style>
 
     <div class="row">
         <div class="col-lg-12">
+            {{-- Header --}}
             <div class="row mt-2 mb-2">
                 <div class="col-lg-6 mb-2">
                     <a href="{{ route('customer.create') }}" class="btn btn-sm shadow-sm myBtn border rounded">
@@ -45,112 +55,94 @@
                     </form>
                 </div>
             </div>
-            <div class="row">
-                @forelse ($customers as $customer)
-                    <div class="col-lg-2 col-md-4 col-sm-6 my-1">
-                        <div class="card shadow-sm justify-content-start p-0 rounded" style="min-height:350px; ">
-                            <div class="row w-100" style="position:absolute;">
-                                <div class="d-flex">
-                                    <h5 class="card-title text-white numbering bg-dark ">
-                                        {{ ($customers->currentpage() - 1) * $customers->perpage() + $loop->index + 1 }}
-                                    </h5>
-                                    <div class="dropdown ms-auto mt-2" style="">
-                                        <a class="" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                            <i class="fa fa-ellipsis-v icon"></i>
-                                        </a>
+            {{-- Body --}}
 
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                            <li><a class="dropdown-item"
-                                                    href="{{ route('customer.show', ['customer' => $customer->id]) }}">Detail</a>
-                                            </li>
-                                            <li><a class="dropdown-item"
-                                                    href="{{ route('customer.edit', ['customer' => $customer->id]) }}">Edit</a>
-                                            </li>
-                                            <li>
-                                                <form method="POST" id="delete-customer-form-{{ $customer->id }}"
-                                                    action="{{ route('customer.destroy', ['customer' => $customer->id]) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <a class="dropdown-item delete" href="#" customer-id="{{ $customer->id }}"
-                                                        customer-role="Customer" customer-name="{{ $customer->name }}">
-                                                        Delete
-                                                    </a>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <img src="{{ $customer->user->getAvatar() }}"
-                                style="object-fit: cover; height:350px; border-top-right-radius: 0.5rem; border-top-left-radius: 0.5rem;">
-                            <div class="card-body">
-                                <div class="card-text">
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <div class="row">
-                                                <div class="col-sm-12">
-                                                    <h5 class="mt-0">{{ $customer->name }}
-                                                    </h5>
-                                                    <div class="table-responsive">
-                                                        <table>
-                                                            <tr>
-                                                                <td><i class="fas fa-envelope"></i></td>
-                                                                <td>
-                                                                    <span>
-                                                                        {{ $customer->user->email }}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><i class="fas fa-user-md"></i></td>
-                                                                <td>
-                                                                    <span>
-                                                                        {{ $customer->job }}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><i class="fas fa-map-marker-alt"></i></td>
-                                                                <td style="white-space:nowrap" class="overflow-hidden">
-                                                                    <span>
-                                                                        {{ $customer->address }}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><i class="fas fa-phone"></i></td>
-                                                                <td>
-                                                                    <span>
-                                                                        +6281233808395
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td><i class="fas fa-birthday-cake"></i></td>
-                                                                <td>
-                                                                    <span>
-                                                                        {{ $customer->birthdate }}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            {{-- Chart  --}}
+            <div class="row">
+                <form method="GET" id="timeFilterForm">
+                    <select name="time" id="timeFilter" onchange="document.getElementById('timeFilterForm').submit();">
+                        <option value="1d" {{ $selectedTime == '1d' ? 'selected' : '' }}>1 Hari</option>
+                        <option value="1w" {{ $selectedTime == '1w' ? 'selected' : '' }}>1 Minggu</option>
+                        <option value="1m" {{ $selectedTime == '1m' ? 'selected' : '' }}>1 Bulan</option>
+                        <option value="1y" {{ $selectedTime == '1y' ? 'selected' : '' }}>1 Tahun</option>
+                        <option value="custom" {{ $selectedTime == 'custom' ? 'selected' : '' }}>Custom</option>
+                    </select>
+                </form>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Customer Origin</h5>
+                        </div>
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <canvas id="originChart" class="chart-canvas"></canvas>
                         </div>
                     </div>
-                @empty
-                    <p class="text-center">There's no customer found on database</p>
-                @endforelse
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Customer Age</h5>
+                        </div>
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <canvas id="ageChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="row justify-content-md-center mt-3">
-                <div class="col-sm-10 d-flex justify-content-md-center">
-                    {{ $customers->onEachSide(2)->links('template.paginationlinks') }}
+
+            <div class="card shadow-sm border">
+                <div class="card-header">
+                    <h4 class="card-title">Customers</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col">Birth Date</th>
+                                    <th scope="col">Gender</th>
+                                    <th scope="col">Job</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($customers as $customer)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('customer.show', ['customer' => $customer->id]) }}">
+                                                {{ $customer->name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ $customer->address }}</td>
+                                        <td>{{ $customer->birthdate }}</td>
+                                        <td>{{ $customer->gender }}</td>
+                                        <td>{{ $customer->job }}</td>
+                                        <td>
+                                            <!-- Edit Button -->
+                                            <a href="{{ route('customer.edit', ['customer' => $customer->id]) }}" class="btn btn-sm btn-primary">Edit</a>
+
+                                            <!-- Delete Button -->
+                                            <form action="{{ route('customer.destroy', ['customer' => $customer->id]) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this customer?')">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center">No customer data available</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $customers->links() }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -160,6 +152,16 @@
 
 @section('footer')
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+            const timeFilter = document.getElementById('timeFilter');
+            const selectedTime = "{{ $selectedTime }}"; // Ambil dari backend
+
+            // Tetapkan nilai yang dipilih pada dropdown
+            if (["1d", "1w", "1m", "1y", "custom"].includes(selectedTime)) {
+                timeFilter.value = selectedTime;
+            }
+        });
+
     $('.delete').click(function() {
         var customer_id = $(this).attr('customer-id');
         var customer_name = $(this).attr('customer-name');
@@ -190,4 +192,58 @@
     });
 
 </script>
+
+{{-- Import Chart.js library --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{-- Chart Js  --}}
+<script>
+    var ageChart = new Chart(document.getElementById('ageChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: @json($ageLabels), // Labels umur
+            datasets: [{
+                label: 'Number of Customers',
+                data: @json($ageCounts), // Jumlah kemunculan
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    var originChart = new Chart(document.getElementById('originChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: @json($originLabels), // Labels origin
+            datasets: [{
+                label: 'Number of Transactions by Origin',
+                data: @json($originCounts), // Jumlah kemunculan
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+
 @endsection
