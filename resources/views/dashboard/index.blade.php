@@ -46,7 +46,7 @@
             <div class="col-sm-12 col-md-6 col-lg-4 p-2">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title">Total Revenue</h5>
+                        <h5 class="card-title">Total Bookings</h5>
                     </div>
                     <div class="card-body">
                         <h2 class="card-text text-center">{{  ($totalBookingsThisMonth) }}</h2>
