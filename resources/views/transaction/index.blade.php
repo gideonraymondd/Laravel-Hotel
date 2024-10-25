@@ -89,7 +89,6 @@
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Customer</th>
                                     <th>Room</th>
                                     <th>Order Date</th>
@@ -104,7 +103,6 @@
                             <tbody>
                                 @forelse ($transactions as $transaction)
                                     <tr>
-                                        <td>{{ $transaction->id }}</td>
                                         <td>{{ $transaction->customer->name }}</td>
                                         <td>{{ $transaction->room->number }}</td>
                                         <td>

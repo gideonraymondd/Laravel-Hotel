@@ -43,7 +43,17 @@
                                 <td>{{ Helper::convertToRupiah($transaction->getTotalPrice()) }}</td>
                                 <td>{{ $transaction->origin }}</td>
                             </tr>
-                        @elseif (request('filterExpired') != 'expired')
+                        @elseif (request('filterExpired') == 'all')
+                            <tr>
+                                <td>{{ $transaction->customer->name }}</td>
+                                <td>{{ $transaction->room->number }}</td>
+                                <td>
+                                    {{ Helper::dateFormat($transaction->check_in) }} - {{ Helper::dateFormat($transaction->check_out) }}
+                                </td>
+                                <td>{{ Helper::convertToRupiah($transaction->getTotalPrice()) }}</td>
+                                <td>{{ $transaction->origin }}</td>
+                            </tr>
+                        @elseif (request('filterExpired') == 'current' && $transaction->check_in <= now() && $transaction->check_out > now())
                             <tr>
                                 <td>{{ $transaction->customer->name }}</td>
                                 <td>{{ $transaction->room->number }}</td>
