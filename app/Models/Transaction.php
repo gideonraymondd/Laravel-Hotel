@@ -23,7 +23,8 @@ class Transaction extends Model
         'created_at',
         'checked_in_time',
         'checked_out_time',
-        'cleaned_time'
+        'cleaned_time',
+        'group_note'
     ];
 
     public function user()

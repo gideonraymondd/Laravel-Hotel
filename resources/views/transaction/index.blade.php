@@ -79,7 +79,7 @@
         </div>
 
         {{-- Order Table --}}
-        <div class="col-lg-7 d-flex mb-2">
+        {{-- <div class="col-lg-7 d-flex mb-2">
             <div class="card shadow-sm border h-100 w-100">
                 <div class="card-header">
                     <h4>Active Guest</h4>
@@ -162,7 +162,124 @@
                     </div>
                 </div>
             </div>
+        </div> --}}
+
+        <div class="col-lg-7 d-flex mb-2">
+            <div class="card shadow-sm border h-100 w-100">
+                <div class="card-header">
+                    <h4>Quick Action</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Alert Handling -->
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    <!-- Room Name Select Option -->
+                    <div class="mb-3">
+                        <label for="roomName" class="form-label">Nama Kamar</label>
+                        <select id="roomName" class="form-control" onchange="fetchRoomDetails(this.value)">
+                            <option value="">Pilih Nama Kamar</option>
+                            @foreach($unexpiredTransactions as $transaction)
+                                <option value="{{ $transaction->id }}">{{$transaction->room->number}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Room Details Section -->
+                    <div class="room-details mt-4">
+                        <h5>Detail Kamar</h5>
+                        <p>Nomor Kamar: <span id="roomNumber">-</span></p>
+                        <p>Status Transaksi: <span id="transactionStatus">-</span></p>
+                        <p>Status Kamar: <span id="roomStatus">-</span></p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-4">
+                        <button id="checkInBtn" class="btn btn-primary" onclick="updateTransaction('check-in')">Check In</button>
+                        <button id="checkOutBtn" class="btn btn-warning" onclick="updateTransaction('check-out')">Check Out</button>
+                        <button id="cleanedBtn" class="btn btn-success" onclick="updateTransaction('cleaned')">Cleaned</button>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <script>
+            const unexpiredTransactions = @json($unexpiredTransactions);
+            console.log('unexpiredTransactions:', unexpiredTransactions)
+
+            function fetchRoomDetails(transactionId) {
+                if (transactionId) {
+                    // Mendapatkan detail transaksi
+                    const transaction = unexpiredTransactions.find(t => t.id == transactionId);
+                    if (transaction) {
+                        document.getElementById('roomNumber').innerText = transaction.room.number || '-';
+                        document.getElementById('transactionStatus').innerText = transaction.status || '-';
+                        document.getElementById('roomStatus').innerText = transaction.room_status || '-'; // Ganti dengan atribut yang benar jika berbeda
+                    }
+                } else {
+                    // Kosongkan detail kamar jika tidak ada kamar yang dipilih
+                    document.getElementById('roomNumber').innerText = '-';
+                    document.getElementById('transactionStatus').innerText = '-';
+                    document.getElementById('roomStatus').innerText = '-';
+                }
+            }
+
+            function updateTransaction(newStatus) {
+                const roomNameSelect = document.getElementById('roomName');
+                const transactionId = roomNameSelect.value; // Make sure this variable is correctly defined
+
+                if (!transactionId) {
+                    alert('Silakan pilih nama kamar terlebih dahulu.');
+                    return;
+                }
+
+                const transaction = unexpiredTransactions.find(t => t.id == transactionId);
+
+                // Check conditions before updating
+                if (newStatus === 'check-in' && (transaction.room_status === 'check-out' || transaction.room_status === 'cleaned')) {
+                    alert('Tidak bisa Check In, kamar sudah Check Out atau sudah dibersihkan.');
+                    return;
+                }
+
+                if (newStatus === 'check-out' && transaction.room_status !== 'check-in') {
+                    alert('Tidak bisa Check Out, kamar belum Check In.');
+                    return;
+                }
+
+                // Proceed with the update
+                fetch(`/transaction/${transactionId}/change-room-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ room_status: newStatus })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Refresh details
+                        fetchRoomDetails(transactionId);
+                        alert(data.success);
+                    } else {
+                        alert(data.error || 'Terjadi kesalahan saat memperbarui status kamar.');
+                    }
+                })
+                .catch(error => console.error('Error updating room status:', error));
+            }
+        </script>
+
+
+
     </div>
 
     <div class="row mb-3">

@@ -102,6 +102,14 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin,Customer']], funct
 Route::get('/transaction/{transaction}/change-room-status', [TransactionController::class, 'showChangeRoomStatusForm'])->name('transaction.changeRoomStatusForm');
 Route::post('/transaction/{transaction}/change-room-status', [TransactionController::class, 'changeRoomStatus'])->name('transaction.changeRoomStatus');
 
+// Transaction
+Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+Route::get('/transaction/room-details/{transactionId}', [TransactionController::class, 'getRoomDetails']);
+
+// Group Booking
+Route::get('/group-booking', [TransactionController::class, 'showGroupBooking'])->name('group.booking.index');
+Route::post('/group-booking/store', [TransactionController::class, 'storeGroupBooking'])->name('group.booking.store');
+
 
 // Dsahboard
 
