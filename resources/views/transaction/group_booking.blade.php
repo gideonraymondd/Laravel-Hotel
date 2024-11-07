@@ -21,7 +21,7 @@
                     {{-- Form Group Booking --}}
                     <form action="{{ route('group.booking.store') }}" method="POST">
                         @csrf
-                        
+
                         <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
                         <div class="mb-3">
                             <label for="customer_id" class="form-label">Customer</label>
@@ -43,7 +43,7 @@
                         <div class="row mb-3">
                             <label for="check_in" class="col-sm-2 col-form-label">Check In</label>
                             <div class="col-sm-10">
-                                <input type="date" name="check_in" class="form-control" id="check_in" required>
+                                <input type="date" name="check_in"  class="form-control" id="check_in" required>
                             </div>
                         </div>
 
@@ -79,6 +79,12 @@
     $(document).ready(function() {
         const customers = @json($customers); // Mengambil data customer dari server
         const rooms = @json($availableRooms); // Mengambil data room dari server
+        const occupied = @json($occupiedRooms); // Mengambil data room dari server
+
+        console.log(rooms)
+        console.log(occupied)
+
+
 
         // Pencarian Customer
         $('#customer-search').on('input', function() {
@@ -177,6 +183,62 @@
                 $('#room-list').hide();
             }
         });
+
+        $(document).ready(function() {
+        // Fungsi untuk mengecek ketersediaan kamar
+        function checkRoomAvailability(checkIn, checkOut) {
+            $.ajax({
+                url: "{{ route('group-booking.check-availability') }}", // Ganti dengan route pengecekan ketersediaan kamar
+                method: "GET",
+                data: {
+                    check_in: checkIn,
+                    check_out: checkOut
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const availableRooms = response.available_rooms;
+                        $('#room-list').empty(); // Kosongkan daftar kamar
+                        if (availableRooms.length > 0) {
+                            availableRooms.forEach(room => {
+                                $('#room-list').append(
+                                    `<li class="list-group-item room-item" data-id="${room.id}">${room.number}</li>`
+                                );
+                            });
+                            $('#room-list').show();
+                        } else {
+                            $('#room-list').hide();
+                            alert('No rooms available for the selected dates.');
+                        }
+                    } else {
+                        alert('Error checking room availability.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred while checking room availability.');
+                }
+            });
+        }
+
+        // Enable room search after check-in and check-out are selected
+        $('#check_in, #check_out').on('change', function() {
+            const checkInDate = $('#check_in').val();
+            const checkOutDate = $('#check_out').val();
+
+            if (checkInDate && checkOutDate) {
+                // Check room availability by sending AJAX request
+                checkRoomAvailability(checkInDate, checkOutDate);
+
+                $('#room-search').prop('disabled', false); // Enable room input
+            } else {
+                $('#room-search').prop('disabled', true); // Disable room input if any date is empty
+                $('#room-list').hide(); // Hide room list
+                $('#selected-rooms').empty(); // Clear selected rooms
+                $('#room_ids').val(''); // Reset selected rooms input
+            }
+        });
+    });
+
+
     });
 </script>
 
