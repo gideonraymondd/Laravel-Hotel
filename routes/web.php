@@ -109,6 +109,10 @@ Route::get('/transaction/room-details/{transactionId}', [TransactionController::
 // Group Booking
 Route::get('/group-booking', [TransactionController::class, 'showGroupBooking'])->name('group.booking.index');
 Route::post('/group-booking/store', [TransactionController::class, 'storeGroupBooking'])->name('group.booking.store');
+Route::get('/group-booking/check-availability', [TransactionController::class, 'checkRoomAvailability'])->name('group-booking.check-availability');
+Route::get('group-booking-payment/{transactionId}', [TransactionController::class, 'showPaymentPage'])->name('group.booking.payment');
+Route::post('group-booking-payment/{transactionId}', [PaymentController::class, 'storeGroupBooking'])->name('group.booking.payment.process');
+
 
 
 // Dsahboard
