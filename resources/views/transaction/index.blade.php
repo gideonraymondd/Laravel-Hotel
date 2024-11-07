@@ -10,21 +10,27 @@
         <div class="col-lg-6 col-md-12 mb-2">
             <div class="d-flex justify-content-start gap-2">
                 <span data-bs-toggle="tooltip" data-bs-placement="right" title="Add Room Reservation">
-                    <button type="button" class="btn btn-sm shadow-sm myBtn border rounded" data-bs-toggle="modal"
+                    <button type="button" class="btn btn-md shadow-sm myBtn border rounded  fw-semibold fs-6" data-bs-toggle="modal"
                         data-bs-target="#staticBackdrop">
-                        <i class="fas fa-plus"></i>
+                        Add Room Reservation
                     </button>
                 </span>
                 <span data-bs-toggle="tooltip" data-bs-placement="right" title="Payment History">
-                    <a href="{{route('payment.index')}}" class="btn btn-sm shadow-sm myBtn border rounded">
-                        <i class="fas fa-history"></i>
+                    <a href="{{route('payment.index')}}" class="btn btn-md shadow-sm myBtn border rounded  fw-semibold fs-6">
+                        Payment History
                     </a>
                 </span>
                 <span data-bs-toggle="tooltip" data-bs-placement="right" title="Transaction History">
-                    <a href="{{route('transaction.history')}}" class="btn btn-sm shadow-sm myBtn border rounded">
-                        <i class="fa-solid fa-file"></i>
+                    <a href="{{route('transaction.history')}}" class="btn btn-md shadow-sm myBtn border rounded  fw-semibold fs-6">
+                        Transaction History
                     </a>
                 </span>
+                <span data-bs-toggle="tooltip" data-bs-placement="right" title="Group Order">
+                    <a href="{{route('group.booking.index')}}" class="btn btn-md shadow-sm myBtn border rounded  fw-semibold fs-6">
+                        Group Order
+                    </a>
+                </span>
+
             </div>
         </div>
         <div class="col-lg-6 col-md-12 mb-2">
@@ -39,7 +45,7 @@
     {{-- Body --}}
     <div class="row mb-3">
         {{-- Room --}}
-        <div class="col-lg-5 d-flex mb-2">
+        <div class="col-lg-6 d-flex mb-2">
             <div class="card shadow-sm border h-100 w-100">
                 <div class="card-header">
                     <h4>Rooms</h4>
@@ -164,20 +170,12 @@
             </div>
         </div> --}}
 
-        <div class="col-lg-7 d-flex mb-2">
+        <div class="col-lg-6 d-flex mb-2">
             <div class="card shadow-sm border h-100 w-100">
                 <div class="card-header">
                     <h4>Quick Action</h4>
                 </div>
                 <div class="card-body">
-                    <!-- Alert Handling -->
-                    @if(session('error'))
-                        <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
-                    @if(session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
-
                     <!-- Room Name Select Option -->
                     <div class="mb-3">
                         <label for="roomName" class="form-label">Nama Kamar</label>
