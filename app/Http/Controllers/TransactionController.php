@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Room;
 use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -197,7 +198,7 @@ class TransactionController extends Controller
 
         // Gunakan pagination langsung tanpa get()
         // $transactions = $transactions->simplePaginate(6);
-        $transactions = Transaction::query()->simplePaginate(10);
+        $transactions = Transaction::query()->simplePaginate(2);
 
         return view('transaction.history', compact('transactions'));
     }
@@ -251,6 +252,8 @@ class TransactionController extends Controller
 
     //     return redirect()->route('transaction.index')->with('success', 'Group booking berhasil disimpan!');
     // }
+
+
     public function storeGroupBooking(Request $request)
     {
         $request->validate([
@@ -270,15 +273,17 @@ class TransactionController extends Controller
         $today = Carbon::today('Asia/Jakarta')->format('Y-m-d');
         $groupNote = 'group_booking_' . $request->customer_id . '_' . $today;
 
-        try {
-            foreach ($request->room_ids as $room_id) {
-                // Pastikan room_id adalah integer
-                $room_id = (int)$room_id;
+        // Array untuk menyimpan ID transaksi yang baru saja dibuat
+        $transactionIds = [];
 
-                Transaction::create([
+        try {
+            DB::beginTransaction(); // Memulai transaksi database
+
+            foreach ($request->room_ids as $room_id) {
+                $transaction = Transaction::create([
                     'user_id' => $request->user_id,
                     'customer_id' => $request->customer_id,
-                    'room_id' => $room_id, // Pastikan ini adalah ID ruangan tunggal
+                    'room_id' => (int)$room_id, // Pastikan ini adalah ID ruangan tunggal
                     'check_in' => $request->check_in,
                     'check_out' => $request->check_out,
                     'status' => 'booked',
@@ -286,35 +291,102 @@ class TransactionController extends Controller
                     'group_note' => $groupNote,
                     'created_at' => Carbon::now('Asia/Jakarta'),
                 ]);
+
+                $transactionIds[] = $transaction->id; // Simpan ID transaksi
             }
 
-            return redirect()->route('transaction.index')->with('success', 'Group booking berhasil disimpan!');
+            DB::commit(); // Menyimpan semua perubahan jika tidak ada error
+
+            // Gabungkan ID transaksi dengan tanda '-'
+            $transactionIdString = implode('-', $transactionIds);
+
+            // Redirect ke halaman pembayaran dengan ID transaksi
+            return redirect()->route('group.booking.payment', ['transactionId' => $transactionIdString])
+                ->with('success', 'Group booking berhasil disimpan!');
         } catch (\Exception $e) {
+            DB::rollBack(); // Batalkan semua perubahan jika ada error
             return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
         }
     }
 
 
-
-
     public function showGroupBooking(Request $request)
     {
-        $checkInDate = $request->input('check_in'); // Ambil tanggal check-in dari request
-        $checkOutDate = $request->input('check_out'); // Ambil tanggal check-out dari request
+        $checkInDate = $request->input('check_in',Carbon::now()->format('Y-m-d')); // Ambil tanggal check-in dari request
+        $checkOutDate = $request->input('check_out',Carbon::now()->format('Y-m-d')); // Ambil tanggal check-out dari request
+
+        // Mengubah input tanggal menjadi objek Carbon sesuai timezone Jakarta
+        $selectedDate = Carbon::createFromFormat('Y-m-d', $checkInDate, 'Asia/Jakarta');
+        $selectedDate2 = Carbon::createFromFormat('Y-m-d', $checkOutDate, 'Asia/Jakarta');
+
 
         // Ambil semua transaksi dalam rentang tanggal yang ditentukan
-        $occupiedRooms = Transaction::where(function ($query) use ($checkInDate, $checkOutDate) {
-            $query->whereBetween('check_in', [$checkInDate, $checkOutDate])
-                ->orWhereBetween('check_out', [$checkInDate, $checkOutDate]);
-        })->pluck('room_id'); // Ambil ID kamar yang terpakai
+        $occupiedRooms = Transaction::where(function ($query) use ($selectedDate, $selectedDate2) {
+            $query->whereDate('check_in', '<=', $selectedDate)
+                ->whereDate('check_out', '>=', $selectedDate2);
+        })->pluck('room_id'); // Get the room IDs of occupied rooms
+
 
         // Ambil semua kamar yang tidak terpakai
         $availableRooms = Room::whereNotIn('id', $occupiedRooms)->get(); // Ambil kamar yang kosong
 
         $customers = Customer::all(); // Ambil semua data pelanggan
 
-        return view('transaction.group_booking', compact('availableRooms', 'customers')); // Pastikan nama file sesuai
+        return view('transaction.group_booking', compact('availableRooms', 'customers', 'occupiedRooms', 'checkInDate', 'checkOutDate')); // Pastikan nama file sesuai
     }
+
+    public function checkRoomAvailability(Request $request)
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'check_in' => 'required|date',
+                'check_out' => 'required|date',
+            ]);
+
+            $checkInDate = Carbon::createFromFormat('Y-m-d', $request->input('check_in'), 'Asia/Jakarta');
+            $checkOutDate = Carbon::createFromFormat('Y-m-d', $request->input('check_out'), 'Asia/Jakarta');
+
+            // Pastikan validasi tanggal diterima dengan benar
+            if (!$checkInDate || !$checkOutDate) {
+                throw new \Exception("Invalid date format.");
+            }
+
+            // Cari kamar yang sudah terisi
+            $occupiedRooms = Transaction::where(function ($query) use ($checkInDate, $checkOutDate) {
+                $query->whereDate('check_in', '<=', $checkInDate)
+                    ->whereDate('check_out', '>=', $checkOutDate);
+            })->pluck('room_id');
+
+            // Ambil kamar yang belum terisi
+            $availableRooms = Room::whereNotIn('id', $occupiedRooms)->get();
+
+            return response()->json([
+                'success' => true,
+                'available_rooms' => $availableRooms
+            ]);
+        } catch (\Exception $e) {
+            // Jika terjadi error, tampilkan pesan error
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showPaymentPage($transactionId)
+    {
+        $transactionIds = explode('-', $transactionId); // Split the transaction ID string into an array
+
+        // You can now fetch the transactions or do any processing
+        $transactions = Transaction::whereIn('id', $transactionIds)->get();
+
+        // Return the payment page view
+        return view('transaction.group_booking_payment', compact('transactions' ,  'transactionId'));
+    }
+
+
+
 
 
 
