@@ -78,7 +78,7 @@
 
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-3">
-                        {{ $allRooms->links() }} <!-- Menampilkan navigasi pagination -->
+                        {{ $allRooms->links('vendor.pagination.simple-bootstrap-5') }} <!-- Menampilkan navigasi pagination -->
                     </div>
                 </div>
             </div>
@@ -340,7 +340,7 @@
                         </tbody>
                     </table>
                     <div class="d-flex justify-content-center">
-                        {{ $filterData->links() }} <!-- Tampilkan link pagination -->
+                        {{ $filterData->appends(request()->query())->links('vendor.pagination.simple-bootstrap-5') }}
                     </div>
                 </div>
 

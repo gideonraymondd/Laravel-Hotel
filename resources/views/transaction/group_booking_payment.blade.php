@@ -9,19 +9,6 @@
                     <h3>Payment for Group Booking</h3>
                 </div>
                 <div class="card-body">
-                    {{-- Display success or error messages --}}
-                    @if(session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
                     {{-- Display the details of each transaction --}}
                     <h5 class="mb-3">Booking Details:</h5>
                     <table class="table table-bordered">
