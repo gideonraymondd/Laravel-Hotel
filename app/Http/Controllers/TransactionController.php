@@ -41,7 +41,7 @@ class TransactionController extends Controller
             ->pluck('room_id'); // Hanya ambil room_id yang sedang ditempati
 
         // Ambil semua kamar dengan pagination
-        $allRooms = Room::simplePaginate(8); // 8 ruangan per halaman
+        $allRooms = Room::paginate(8); // 8 ruangan per halaman
 
          //Check in check out dan cleaned by Date
 
@@ -174,13 +174,39 @@ class TransactionController extends Controller
     }
 
 
-    public function history()
+    public function history(Request $request)
     {
-        $transactions = Transaction::with(['user', 'customer', 'room', 'payment'])->get();
-        $transactions = Transaction::query()->simplePaginate(10);
+        // Start with all transactions
+        $query = Transaction::with(['user', 'customer', 'room', 'payment']);
+
+        // Get start of today and end of today
+        $startOfToday = now()->startOfDay(); // e.g., '2024-11-13 00:00:00'
+        $endOfToday = now()->endOfDay(); // e.g., '2024-11-13 23:59:59'
+
+        // Apply filter for expired transactions
+        if ($request->filled('filterExpired')) {
+            if ($request->filterExpired == 'expired') {
+                $query->where('check_out', '<', $startOfToday); // Expired transactions (before today)
+            } elseif ($request->filterExpired == 'current') {
+                $query->where('check_in', '<=', $endOfToday) // Check-in is before or today
+                    ->where('check_out', '>=', $startOfToday); // Check-out is after or today
+            }
+        }
+
+        // Apply filter for origin if specified
+        if ($request->filled('filterOrigin') && $request->filterOrigin != 'all') {
+            $query->where('origin', $request->filterOrigin);
+        }
+
+        // Paginate the result
+        $transactions = $query->paginate(10);
 
         return view('transaction.history', compact('transactions'));
     }
+
+
+
+
 
     public function filter(Request $request)
     {
