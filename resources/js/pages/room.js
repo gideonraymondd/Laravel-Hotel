@@ -45,31 +45,34 @@ $(function () {
                 data: "id",
                 render: function (roomId) {
                     return `
-                        <button class="btn btn-light btn-sm rounded shadow-sm border"
-                            data-action="edit-room" data-room-id="${roomId}"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Edit room">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <form class="btn btn-sm delete-room" method="POST"
-                            id="delete-room-form-${roomId}"
-                            action="/room/${roomId}">
-                            <input type="hidden" name="_method" value="DELETE"> <!-- Method override -->
-                            <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
-                            <a class="btn btn-light btn-sm rounded shadow-sm border delete"
-                                href="#" room-id="${roomId}" room-role="room" data-bs-toggle="tooltip"
-                                data-bs-placement="top" title="Delete room">
-                                <i class="fas fa-trash-alt"></i>
+                        <div class="d-flex justify-content-center align-items-center gap-2 p-2">
+                            <button class="btn btn-light btn-sm rounded shadow-sm border"
+                                data-action="edit-room" data-room-id="${roomId}"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Edit room">
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            <form class="btn btn-sm delete-room m-0" method="POST"
+                                id="delete-room-form-${roomId}"
+                                action="/room/${roomId}">
+                                <input type="hidden" name="_method" value="DELETE"> <!-- Method override -->
+                                <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
+                                <a class="btn btn-light btn-sm rounded shadow-sm border delete d-block "
+                                    href="#" room-id="${roomId}" room-role="room" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="Delete room">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </form>
+
+                            <a class="btn btn-light btn-sm rounded shadow-sm border d-block"
+                                href="/room/${roomId}"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Room detail">
+                                <i class="fas fa-info-circle"></i>
                             </a>
-                        </form>
-
-                        <a class="btn btn-light btn-sm rounded shadow-sm border"
-                            href="/room/${roomId}"
-                            data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Room detail">
-                            <i class="fas fa-info-circle"></i>
-                        </a>
-
+                        </div>
                     `;
+
                 },
             },
         ],
@@ -142,7 +145,7 @@ $(function () {
                 if (!response) return;
 
                 Swal.fire({
-                    position: "top-end",
+                    position: "center",
                     icon: "success",
                     title: response.message,
                     showConfirmButton: false,
@@ -195,7 +198,7 @@ $(function () {
                 if (!response) return;
 
                 Swal.fire({
-                    position: "top-end",
+                    position: "center",
                     icon: "success",
                     title: response.message,
                     showConfirmButton: false,

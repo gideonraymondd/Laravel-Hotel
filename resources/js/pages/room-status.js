@@ -117,7 +117,7 @@ $(function() {
             if (!response) return
 
             Swal.fire({
-                position: 'top-end',
+                position: 'center',
                 icon: 'success',
                 title: response.message,
                 showConfirmButton: false,
@@ -166,7 +166,7 @@ $(function() {
             if (!response) return
 
             Swal.fire({
-                position: 'top-end',
+                position: 'center',
                 icon: 'success',
                 title: response.message,
                 showConfirmButton: false,
@@ -177,7 +177,7 @@ $(function() {
         } catch (e) {
             if(e && e.responseJSON && e.responseJSON.message) {
                 Swal.fire({
-                    position: 'top-end',
+                    position: 'center',
                     icon: 'error',
                     title: e.responseJSON.message,
                     showConfirmButton: false,
