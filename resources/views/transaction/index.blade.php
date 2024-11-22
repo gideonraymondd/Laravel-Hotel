@@ -78,97 +78,10 @@
 
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-3">
-                        {{ $allRooms->links('vendor.pagination.simple-bootstrap-5') }} <!-- Menampilkan navigasi pagination -->
-                    </div>
+                        {{ $allRooms->appends(request()->except('rooms_page'))->links('vendor.pagination.simple-bootstrap-5') }}                    </div>
                 </div>
             </div>
         </div>
-
-        {{-- Order Table --}}
-        {{-- <div class="col-lg-7 d-flex mb-2">
-            <div class="card shadow-sm border h-100 w-100">
-                <div class="card-header">
-                    <h4>Active Guest</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Customer</th>
-                                    <th>Room</th>
-                                    <th>Order Date</th>
-                                    <th>Total Price</th>
-                                    <th>Payment Status</th>
-                                    <th>Room Status</th>
-                                    <th>Order Status</th>
-                                    <th>Origin</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($transactions as $transaction)
-                                    <tr>
-                                        <td>{{ $transaction->customer->name }}</td>
-                                        <td>{{ $transaction->room->number }}</td>
-                                        <td>
-                                            {{ Helper::dateFormat($transaction->check_in) }} - {{ Helper::dateFormat($transaction->check_out) }}
-                                        </td>
-                                        <td>{{ Helper::convertToRupiah($transaction->getTotalPrice()) }}
-                                        </td>
-                                        <td>
-                                            @if ($transaction->isPaymentComplete())
-                                                <span class="text-success">Paid off</span>
-                                            @else
-                                                <span class="text-danger">outstanding</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            {{ $transaction->room_status }}</td>
-                                        </td>
-                                        <td>
-                                            {{ $transaction->status }}</td>
-                                        </td>
-                                        <td>
-                                            {{ $transaction->origin }}</td>
-                                        </td>
-                                        <td>
-                                            <!-- Tombol Pay -->
-                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0 {{$transaction->getTotalPrice($transaction->room->price, $transaction->check_in, $transaction->check_out) - $transaction->getTotalPayment() <= 0 ? 'disabled' : ''}}"
-                                                href="{{ route('transaction.payment.create', ['transaction' => $transaction->id]) }}"
-                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Pay">
-                                                Pay
-                                            </a>
-
-                                            <!-- Tombol Change Status -->
-                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0"
-                                            href="{{ route('transaction.changeRoomStatus', ['transaction' => $transaction->id]) }}"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Change Status">
-                                                Change Status
-                                            </a>
-
-                                            <!-- Tombol Details -->
-                                            <a class="btn btn-light btn-sm rounded shadow-sm border p-1 m-0"
-                                            href="{{ route('transaction.show', ['transaction' => $transaction->id]) }}"
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Details">
-                                                Details
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="15" class="text-center">
-                                            There's no data in this table
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                        {{ $transactions->links() }}
-                    </div>
-                </div>
-            </div>
-        </div> --}}
 
         <div class="col-lg-6 d-flex mb-2">
             <div class="card shadow-sm border h-100 w-100">
@@ -300,7 +213,6 @@
                             <tr>
                                 <th>#</th>
                                 <th>Nomor Ruangan</th>
-                                <th>Lantai</th>
                                 <th>Status</th>
                                 <th>Tanggal</th>
                             </tr>
@@ -315,7 +227,6 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $transaction->room->number }}</td>
-                                        <td>{{ $transaction->room->floor }}</td>
                                         <td>
                                             @if ($filter === 'check_in')
                                                 <span class="badge badge-primary">Check-In</span>
@@ -340,8 +251,8 @@
                         </tbody>
                     </table>
                     <div class="d-flex justify-content-center">
-                        {{ $filterData->appends(request()->query())->links('vendor.pagination.simple-bootstrap-5') }}
-                    </div>
+                        {{-- {{ $filterData->appends(request()->query())->links('vendor.pagination.simple-bootstrap-5') }} --}}
+                        {{ $filterData->appends(request()->except('filter_page'))->links('vendor.pagination.simple-bootstrap-5') }}                    </div>
                 </div>
 
             </div>

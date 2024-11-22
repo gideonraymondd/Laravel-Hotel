@@ -41,7 +41,7 @@ class TransactionController extends Controller
             ->pluck('room_id'); // Hanya ambil room_id yang sedang ditempati
 
         // Ambil semua kamar dengan pagination
-        $allRooms = Room::paginate(8); // 8 ruangan per halaman
+        $allRooms = Room::paginate(8, ['*'], 'rooms_page');
 
          //Check in check out dan cleaned by Date
 
@@ -63,26 +63,26 @@ class TransactionController extends Controller
 
         $filter = $request->input('filter', 'check_in');
         $today = Carbon::today()->format('Y-m-d');
-        $perPage = 10; // Atur jumlah item per halaman
 
-        // Filter data berdasarkan pilihan user
         if ($filter === 'check_in') {
             $filterData = Transaction::whereDate('checked_in_time', $today)
                 ->with('room') // Pastikan relasi room dimuat
-                ->paginate($perPage)
+                ->paginate(10, ['*'], 'check_in_page') // Gunakan custom key 'check_in_page'
                 ->appends($request->all()); // Menjaga query string saat pagination
         } elseif ($filter === 'check_out') {
             $filterData = Transaction::whereDate('checked_out_time', $today)
                 ->with('room') // Pastikan relasi room dimuat
-                ->paginate($perPage)
+                ->paginate(10, ['*'], 'check_out_page') // Gunakan custom key 'check_out_page'
                 ->appends($request->all());
         } elseif ($filter === 'cleaned') {
             $filterData = Transaction::whereDate('cleaned_time', $today)
                 ->with('room') // Pastikan relasi room dimuat
-                ->paginate($perPage)
+                ->paginate(10, ['*'], 'cleaned_page') // Gunakan custom key 'cleaned_page'
                 ->appends($request->all());
         } else {
-            $filterData = Transaction::with('room')->paginate($perPage); // Jika filter tidak dikenali
+            $filterData = Transaction::with('room')
+                ->paginate(10, ['*'], 'default_page') // Gunakan custom key 'default_page' untuk default
+                ->appends($request->all());
         }
 
         // Tentukan tanggal yang dipilih atau gunakan hari ini sebagai default
@@ -205,9 +205,6 @@ class TransactionController extends Controller
     }
 
 
-
-
-
     public function filter(Request $request)
     {
         // Dapatkan semua transaksi atau hanya yang expired
@@ -312,7 +309,7 @@ class TransactionController extends Controller
                     'room_id' => (int)$room_id, // Pastikan ini adalah ID ruangan tunggal
                     'check_in' => $request->check_in,
                     'check_out' => $request->check_out,
-                    'status' => 'booked',
+                    'status' => 'Reservation',
                     'origin' => 'group_booking',
                     'group_note' => $groupNote,
                     'created_at' => Carbon::now('Asia/Jakarta'),
