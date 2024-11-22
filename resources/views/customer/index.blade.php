@@ -29,45 +29,42 @@
             max-height: 300px;
             aspect-ratio: 1 / 1;
             }
+        .row{
+            margin-right: 1%;
+        }
 
 
 
     </style>
 
     <div class="row">
+        <h4 class="text-center p-2 d-block d-sm-none">Customer</h4>
         <div class="col-lg-12">
             {{-- Header --}}
             <div class="row mt-2 mb-2">
                 <div class="col-lg-6 mb-2">
-                    <a href="{{ route('customer.create') }}" class="btn btn-sm shadow-sm myBtn border rounded">
-                        <svg width="25" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="black">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+                    <a href="{{ route('customer.create') }}" class="btn btn-md shadow-sm myBtn border rounded fw-semibold fs-6">
+                        Add Customer
                     </a>
-                </div>
-                <div class="col-lg-6 mb-2">
-                    <form class="d-flex" method="GET" action="{{ route('customer.index') }}">
-                        <input class="form-control me-2" type="search" placeholder="Search by name" aria-label="Search" id="search"
-                            name="search" value="{{ request()->input('search') }}">
-                        <button class="btn btn-outline-dark" type="submit">Search</button>
-                    </form>
                 </div>
             </div>
             {{-- Body --}}
 
             {{-- Chart  --}}
             <div class="row">
-                <form method="GET" id="timeFilterForm">
-                    <select name="time" id="timeFilter" onchange="document.getElementById('timeFilterForm').submit();">
-                        <option value="1d" {{ $selectedTime == '1d' ? 'selected' : '' }}>1 Hari</option>
-                        <option value="1w" {{ $selectedTime == '1w' ? 'selected' : '' }}>1 Minggu</option>
-                        <option value="1m" {{ $selectedTime == '1m' ? 'selected' : '' }}>1 Bulan</option>
-                        <option value="1y" {{ $selectedTime == '1y' ? 'selected' : '' }}>1 Tahun</option>
-                        <option value="custom" {{ $selectedTime == 'custom' ? 'selected' : '' }}>Custom</option>
-                    </select>
+                <form method="GET" id="timeFilterForm" class="d-inline-block mb-2">
+                    <div class="input-group input-group-sm">
+                        <select name="time" id="timeFilter" class="form-select form-select-sm" onchange="document.getElementById('timeFilterForm').submit();" style="width: auto; padding: 4px; margin: 4px;">
+                            <option value="1d" {{ $selectedTime == '1d' ? 'selected' : '' }}>1 Hari</option>
+                            <option value="1w" {{ $selectedTime == '1w' ? 'selected' : '' }}>1 Minggu</option>
+                            <option value="1m" {{ $selectedTime == '1m' ? 'selected' : '' }}>1 Bulan</option>
+                            <option value="1y" {{ $selectedTime == '1y' ? 'selected' : '' }}>1 Tahun</option>
+                            <option value="custom" {{ $selectedTime == 'custom' ? 'selected' : '' }}>Custom</option>
+                        </select>
+                    </div>
                 </form>
+
+
                 <div class="col-md-6 mb-4">
                     <div class="card shadow-sm h-100">
                         <div class="card-header">
