@@ -53,12 +53,6 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary">Proceed to Payment</button>
-                        @if(session('success'))
-                            <div class="alert alert-success">
-                                {{ session('success') }}
-                            </div>
-                        @endif
-
                     </form>
                 </div>
             </div>
