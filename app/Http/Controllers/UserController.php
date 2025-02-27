@@ -78,13 +78,29 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        activity()->causedBy(auth()->user())->log('User '.$user->name.' updated');
+        activity()->causedBy(auth()->user())->log('User '.$user->name.' deletion attempted');
+
+        // Cek apakah user memiliki transaksi atau customer terkait
+        if ($user->transaction()->exists() || $user->customer()->exists()) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'User '.$user->name.' tidak dapat dihapus karena memiliki transaksi atau customer terkait!'
+            ]);
+        }
+
         try {
             $user->delete();
-
-            return redirect()->route('user.index')->with('success', 'User '.$user->name.' deleted!');
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User '.$user->name.' berhasil dihapus!'
+            ]);
         } catch (\Exception $e) {
-            return redirect()->route('user.index')->with('failed', 'Customer '.$user->name.' cannot be deleted! Error Code:'.$e->errorInfo[1]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User '.$user->name.' tidak dapat dihapus! Error Code: '.$e->getCode()
+            ]);
         }
     }
+
+
 }

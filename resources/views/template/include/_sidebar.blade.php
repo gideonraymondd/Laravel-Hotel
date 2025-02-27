@@ -8,6 +8,35 @@
         top: -60px !important;
         left: 80px !important;
     }
+
+  /* Mengubah warna ikon menjadi emas (#c4985d) pada elemen dengan kelas .nav-link */
+    #sidebar-wrapper .nav-link i {
+        color: #c4985d;
+    }
+
+    /* Mengubah warna ikon saat hover menjadi emas */
+    #sidebar-wrapper .nav-link:hover i {
+        color: #c4985d;
+    }
+
+   /* Mengubah warna teks dan ikon saat nav-link aktif */
+    .nav-pills .nav-link.active {
+        color: #b3824d !important; /* Warna teks aktif menjadi lebih gelap */
+        background-color: transparent !important; /* Menghilangkan background biru */
+    }
+
+    .nav-pills .nav-link.active i {
+        color: #b3824d !important; /* Mengubah warna ikon menjadi lebih gelap */
+        border: 2px solid #b3824d; /* Menambahkan border pada ikon dengan warna yang sama */
+        border-radius: 50%; /* Membuat border menjadi lingkaran */
+        padding: 8px; /* Menambahkan padding untuk memberi ruang pada ikon di dalam border */
+    }
+
+
+
+</style>
+
+
 </style>
 <div class="" id="sidebar-wrapper">
     <div class="d-flex flex-column"
@@ -43,7 +72,7 @@
                         <li><a class="dropdown-item" href="{{ route('room.index') }}">Room</a></li>
                         <li><a class="dropdown-item" href="{{ route('type.index') }}">Type</a></li>
                         <li><a class="dropdown-item" href="{{ route('roomstatus.index') }}">Status</a></li>
-                        <li><a class="dropdown-item" href="{{ route('facility.index') }}">Facility</a></li>
+                        {{-- <li><a class="dropdown-item" href="{{ route('facility.index') }}">Facility</a></li> --}}
                     </ul>
                 </li>
                 <li class="mb-2 bg-white rounded cursor-pointer">

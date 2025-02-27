@@ -8,7 +8,7 @@
                     <h2>Edit Customer</h2>
                 </div>
                 <div class="card-body p-3">
-                    <form class="row g-3" method="POST"
+                    <form id="customerForm" class="row g-3" method="POST"
                         action="{{ route('customer.update', ['customer' => $customer->id]) }}"  enctype="multipart/form-data">
                         @method('PUT')
                         @csrf
@@ -24,8 +24,7 @@
                         </div>
                         <div class="col-md-12">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" " id=" email"
-                                name="email" value="{{ $customer->user->email }}" disabled>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $customer->user->email) }}">
                             @error('email')
                                 <div class="text-danger mt-1">
                                     {{ $message }}
@@ -46,9 +45,8 @@
                             <label for="gender" class="form-label">Gender</label>
                             <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender"
                                 aria-label="Default select example">
-                                {{-- <option selected hidden>Select</option> --}}
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
+                                <option value="Male" {{ $customer->gender == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ $customer->gender == 'Female' ? 'selected' : '' }}>Female</option>
                             </select>
                             @error('gender')
                                 <div class="text-danger mt-1">
@@ -78,7 +76,7 @@
                         </div>
                         <div class="col-mg-12">
                             <label for="avatar" class="form-label">Profile Picture</label>
-                            <input class="form-control" type="file" id="avatar" name="avatar" >
+                            <input class="form-control" type="file" id="avatar" name="avatar">
                             @error('avatar')
                                 <div class="text-danger mt-1">
                                     {{ $message }}
@@ -93,5 +91,7 @@
             </div>
         </div>
     </div>
-
 @endsection
+
+
+

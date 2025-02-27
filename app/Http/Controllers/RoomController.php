@@ -54,14 +54,31 @@ class RoomController extends Controller
         ]);
     }
 
-    public function store(StoreRoomRequest $request)
+    public function store(Request $request)
     {
+        // Validasi input
+        $request->validate([
+            'number' => 'required|unique:rooms,number',
+            'type_id' => 'required|exists:types,id',
+            'room_status_id' => 'required|exists:room_statuses,id',
+            'capacity' => ['required', 'integer', 'min:1', 'regex:/^[1-9]\d*$/'],
+            'price' => ['required', 'numeric', 'min:1', 'regex:/^[1-9]\d*(\.\d{1,2})?$/'],
+            // 'view' => 'nullable|string|max:255',
+        ], [
+            'number.unique' => 'Nomor ruangan sudah ada!',
+            'capacity.min' => 'Capacity harus lebih dari 0!',
+            'capacity.regex' => 'Capacity harus bilangan bulat positif!',
+            'price.min' => 'Price harus lebih dari 0!',
+        ]);
+
+        // Simpan data ke database
         $room = Room::create($request->all());
 
         return response()->json([
-            'message' => 'Room '.$room->number.' created',
+            'message' => 'Room ' . $room->number . ' created',
         ]);
     }
+
 
     public function show(Room $room)
     {
@@ -92,54 +109,82 @@ class RoomController extends Controller
         ]);
     }
 
-    public function update(Room $room, StoreRoomRequest $request)
+    public function update(Request $request, Room $room)
     {
-        $room->update($request->all());
+        // Validasi input
+        $request->validate([
+            'number' => 'required|unique:rooms,number,' . $room->id, // Unique untuk pengecekan nomor ruangan
+            'type_id' => 'required|exists:types,id', // Memastikan type_id valid
+            'room_status_id' => 'required|exists:room_statuses,id', // Memastikan room_status_id valid
+            'capacity' => ['required', 'integer', 'min:1', 'regex:/^[1-9]\d*$/'], // Validasi capacity
+            'price' => ['required', 'numeric', 'min:1', 'regex:/^[1-9]\d*(\.\d{1,2})?$/'], // Validasi price
+            'view' => 'nullable|string|max:255', // View opsional
+        ], [
+            'number.unique' => 'Nomor ruangan sudah ada!',
+            'capacity.min' => 'Capacity harus lebih dari 0!',
+            'capacity.regex' => 'Capacity harus bilangan bulat positif!',
+            'price.min' => 'Price harus lebih dari 0!',
+            'price.regex' => 'Price harus angka positif dan bisa pakai desimal!',
+        ]);
 
+        // Update data room
+        $room->update($request->all()); // Update record
+
+        // Mengembalikan response setelah update berhasil
         return response()->json([
-            'message' => 'Room '.$room->number.' udpated!',
+            'message' => 'Room ' . $room->number . ' updated',
         ]);
     }
+
 
     public function destroy(Room $room)
-{
-    Log::info('Start deleting room: '.$room->id);
-
-    try {
-        // Hapus room dari database
-        Log::info('Deleting room from database: '.$room->id);
-        $room->delete();
-
-        Log::info('Room deleted successfully');
-        return response()->json([
-            'message' => 'Room number '.$room->number.' deleted!',
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Error deleting room: '.$e->getMessage());
-        return response()->json([
-            'message' => 'Room '.$room->number.' cannot be deleted! Error: '.$e->getMessage(),
-        ], 500);
-    }
-}
-
-public function updatePrices(Request $request)
     {
-        // Validasi input increment price
+        Log::info('Start deleting room: '.$room->id);
+
+        try {
+            // Periksa apakah ada transaksi terkait sebelum menghapus room
+            if ($room->transactions()->exists()) {
+                Log::warning('Room has related transactions and cannot be deleted: ' . $room->id);
+                return response()->json([
+                    'message' => 'Data kamar dengan nomor '.$room->number.' tidak dapat dihapus karena sudah ada transaksi yang terkait.',
+                ], 400);
+            }
+
+            // Hapus room dari database
+            Log::info('Deleting room from database: '.$room->id);
+            $room->delete();
+
+            Log::info('Room deleted successfully');
+            return response()->json([
+                'message' => 'Kamar dengan nomor '.$room->number.' berhasil dihapus.',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting room: '.$e->getMessage());
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menghapus kamar '.$room->number.': '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function updatePrices(Request $request)
+    {
+        // Validasi input price
         $request->validate([
             'price_increment' => 'required|numeric',
         ]);
 
-        // Ambil nilai kenaikan harga
-        $increment = $request->input('price_increment');
+        // Ambil nilai harga baru
+        $newPrice = $request->input('price_increment');
 
-        // Update harga di tabel 'rooms'
+        // Update harga di tabel 'rooms' dengan harga baru
         Room::query()->update([
-            'price' => \DB::raw("price + {$increment}")
+            'price' => $newPrice
         ]);
 
-        // Redirect ke halaman yang sama dengan pesan sukses
         return redirect()->back()->with('success', 'Room prices updated successfully!');
     }
+
 
     public function resetPrices(Request $request)
     {

@@ -91,6 +91,25 @@
                                 </div>
                             </div>
                             <!-- Modal -->
+                            {{-- <div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="priceModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('rooms.updatePrices') }}" method="POST">
+                                            @csrf
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="priceIncrement" class="form-label">New Price</label>
+                                                    <input type="number" id="priceIncrement" name="price_increment" class="form-control" placeholder="Enter new price">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-primary">Update Prices</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div> --}}
                             <div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="priceModalLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -98,13 +117,13 @@
                                             @csrf
                                             <div class="modal-body">
                                                 <div class="mb-3">
-                                                    <label for="priceIncrement" class="form-label">Increment Amount</label>
-                                                    <input type="number" id="priceIncrement" name="price_increment" class="form-control" placeholder="Enter amount to increase">
+                                                    <label for="priceIncrement" class="form-label">New Price</label>
+                                                    <input type="text" id="priceIncrement" name="price_increment" class="form-control" placeholder="Enter new price">
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-primary">Update Prices</button>
+                                                <button type="submit" class="btn btn-primary" id="updatePricesButton">Update Prices</button>
                                             </div>
                                         </form>
                                     </div>
@@ -140,12 +159,47 @@
 @endsection
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const priceInput = document.getElementById("priceIncrement");
+
+        function formatNumber(value) {
+            return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        priceInput.addEventListener("input", function (e) {
+            // Simpan posisi kursor
+            let cursorPosition = e.target.selectionStart;
+            let value = e.target.value.replace(/\./g, ""); // Hapus semua titik sebelum format ulang
+
+            // Cegah input selain angka
+            if (!/^\d+$/.test(value) && value !== "") {
+                return;
+            }
+
+            // Format ulang dengan titik ribuan
+            e.target.value = formatNumber(value);
+
+            // Atur kembali posisi kursor agar tidak meloncat ke akhir input
+            let diff = e.target.value.length - value.length;
+            e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        });
+
+        // Pastikan angka dikirim tanpa titik saat form dikirim
+        document.querySelector("form").addEventListener("submit", function () {
+            priceInput.value = priceInput.value.replace(/\./g, ""); // Hapus titik sebelum submit
+        });
+    });
+
+
     document.getElementById('updatePricesButton').addEventListener('click', function() {
         let incrementValue = document.getElementById('priceIncrement').value;
+
+        // Remove dots for processing the value before sending it to the server
+        incrementValue = incrementValue.replace(/\./g, '');
+
         if (incrementValue) {
             alert('Prices will be updated by ' + incrementValue);
-            // Here you can add your logic to update the prices, maybe an AJAX request or form submission.
-            // For now, just closing the modal
+            // Logic to update prices (e.g., AJAX request or form submission)
             let priceModal = new bootstrap.Modal(document.getElementById('priceModal'));
             priceModal.hide();
         } else {
@@ -153,3 +207,4 @@
         }
     });
 </script>
+

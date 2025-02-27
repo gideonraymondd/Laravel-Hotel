@@ -15,31 +15,17 @@ $(function () {
             error: function (xhr, status, error) {},
         },
         columns: [
-            {
-                name: "number",
-                data: "number",
-            },
-            {
-                name: "type",
-                data: "type",
-            },
-            {
-                name: "capacity",
-                data: "capacity",
-            },
+            { name: "number", data: "number" },
+            { name: "type", data: "type" },
+            { name: "capacity", data: "capacity" },
             {
                 name: "price",
                 data: "price",
                 render: function (price) {
-                    return `<div>${new Intl.NumberFormat().format(
-                        price
-                    )}</div>`;
+                    return `<div>${new Intl.NumberFormat().format(price)}</div>`;
                 },
             },
-            {
-                name: "status",
-                data: "status",
-            },
+            { name: "status", data: "status" },
             {
                 name: "id",
                 data: "id",
@@ -52,19 +38,13 @@ $(function () {
                                 <i class="fas fa-edit"></i>
                             </button>
 
-                            <form class="btn btn-sm delete-room m-0" method="POST"
-                                id="delete-room-form-${roomId}"
-                                action="/room/${roomId}">
-                                <input type="hidden" name="_method" value="DELETE"> <!-- Method override -->
-                                <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
-                                <a class="btn btn-light btn-sm rounded shadow-sm border delete d-block "
-                                    href="#" room-id="${roomId}" room-role="room" data-bs-toggle="tooltip"
-                                    data-bs-placement="top" title="Delete room">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </form>
+                            <button class="btn btn-light btn-sm rounded shadow-sm border delete-room"
+                                data-room-id="${roomId}" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="Delete room">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
 
-                            <a class="btn btn-light btn-sm rounded shadow-sm border d-block"
+                            <a class="btn btn-light btn-sm rounded shadow-sm border"
                                 href="/room/${roomId}"
                                 data-bs-toggle="tooltip" data-bs-placement="top"
                                 title="Room detail">
@@ -72,7 +52,6 @@ $(function () {
                             </a>
                         </div>
                     `;
-
                 },
             },
         ],
@@ -84,140 +63,128 @@ $(function () {
         focus: true,
     });
 
-    $(document).on("click", ".delete", function () {
-        var room_id = $(this).attr("room-id");
-        const swalWithBootstrapButtons = Swal.mixin({
-            customClass: {
-                confirmButton: "btn btn-success",
-                cancelButton: "btn btn-danger",
-            },
-            buttonsStyling: false,
-        });
+    // **Event untuk Menghapus Room dengan SweetAlert**
+    $(document).on("click", ".delete-room", function () {
+        const roomId = $(this).data("room-id");
 
-        swalWithBootstrapButtons
-            .fire({
-                title: "Are you sure?",
-                text: "Room will be deleted, You won't be able to revert this!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel! ",
-                reverseButtons: true,
-            })
-            .then((result) => {
-                if (result.isConfirmed) {
-                    $(`#delete-room-form-${room_id}`).submit(); // Submit form
-                }
-            });
-    })
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Room will be deleted, and you won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel!",
+            reverseButtons: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await $.ajax({
+                        url: `/room/${roomId}`,
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                        },
+                    });
 
-        .on("click", "#add-button", async function () {
-            modal.show();
+                    Swal.fire({
+                        icon: "success",
+                        title: "Deleted!",
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
 
-            $("#main-modal .modal-body").html(`Fetching data`);
-
-            const response = await $.get(`/room/create`);
-            if (!response) return;
-
-            $("#main-modal .modal-title").text("Create new room");
-            $("#main-modal .modal-body").html(response.view);
-            $(".select2").select2();
-        })
-        .on("click", "#btn-modal-save", function () {
-            $("#form-save-room").submit();
-        })
-        .on("submit", "#form-save-room", async function (e) {
-            e.preventDefault();
-            CustomHelper.clearError();
-            $("#btn-modal-save").attr("disabled", true);
-            try {
-                const response = await $.ajax({
-                    url: $(this).attr("action"),
-                    data: $(this).serialize(),
-                    method: $(this).attr("method"),
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
-                    },
-                });
-
-                if (!response) return;
-
-                Swal.fire({
-                    position: "center",
-                    icon: "success",
-                    title: response.message,
-                    showConfirmButton: false,
-                    timer: 1500,
-                });
-
-                modal.hide();
-                datatable.ajax.reload();
-            } catch (e) {
-                if (e.status === 422) {
-                    console.log(e);
+                    datatable.ajax.reload();
+                } catch (error) {
                     Swal.fire({
                         icon: "error",
                         title: "Oops...",
-                        text: e.responseJSON.message,
+                        text: error.responseJSON?.message || "Something went wrong!",
                     });
-                    CustomHelper.errorHandlerForm(e);
                 }
-            } finally {
-                $("#btn-modal-save").attr("disabled", false);
             }
-        })
-        .on("click", '[data-action="edit-room"]', async function () {
-            modal.show();
+        });
+    });
 
-            $("#main-modal .modal-body").html(`Fetching data`);
+    // **Event untuk Tambah Room**
+    $(document).on("click", "#add-button", async function () {
+        modal.show();
+        $("#main-modal .modal-body").html(`Fetching data...`);
+        const response = await $.get(`/room/create`);
+        if (!response) return;
+        $("#main-modal .modal-title").text("Create new room");
+        $("#main-modal .modal-body").html(response.view);
+        $(".select2").select2();
+    });
 
-            const roomId = $(this).data("room-id");
+    // **Event untuk Simpan Room**
+    $(document).on("click", "#btn-modal-save", function () {
+        $("#form-save-room").submit();
+    });
 
-            const response = await $.get(`/room/${roomId}/edit`);
-            if (!response) return;
+    $(document).on("submit", "#form-save-room", async function (e) {
+        e.preventDefault();
+        $("#btn-modal-save").attr("disabled", true);
 
-            $("#main-modal .modal-title").text("Edit room");
-            $("#main-modal .modal-body").html(response.view);
-            $(".select2").select2();
-        })
-        .on("submit", ".delete-room", async function (e) {
-            e.preventDefault(); // Mencegah default form submission
+        try {
+            const response = await $.ajax({
+                url: $(this).attr("action"),
+                data: $(this).serialize(),
+                method: $(this).attr("method"),
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                },
+            });
 
-            try {
-                const response = await $.ajax({
-                    url: $(this).attr("action"),
-                    data: $(this).serialize(),
-                    method: $(this).attr("method"), // Akan menggunakan DELETE
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                    },
-                });
+            Swal.fire({
+                position: "center",
+                icon: "success",
+                title: response.message,
+                showConfirmButton: false,
+                timer: 1500,
+            });
 
-                if (!response) return;
+            modal.hide();
+            datatable.ajax.reload();
+        } catch (e) {
+            if (e.status === 422) {
+                let errorMessages = e.responseJSON.errors;
+                let allErrors = '';
 
-                Swal.fire({
-                    position: "center",
-                    icon: "success",
-                    title: response.message,
-                    showConfirmButton: false,
-                    timer: 1500,
-                });
+                // Gabungkan semua pesan error dalam satu string
+                for (let field in errorMessages) {
+                    errorMessages[field].forEach(function(msg) {
+                        allErrors += msg + '\n'; // Menambahkan setiap pesan ke string
+                    });
+                }
 
-                datatable.ajax.reload(); // Reload datatable
-            } catch (e) {
+                // Tampilkan semua pesan error dalam Swal modal
                 Swal.fire({
                     icon: "error",
                     title: "Oops...",
-                    text: e.responseJSON.message,
+                    text: allErrors,  // Menampilkan semua pesan error
                 });
             }
-        })
-        .on("change", "#status", function () {
-            datatable.ajax.reload();
-        })
-        .on("change", "#type", function () {
-            datatable.ajax.reload();
-        });
+
+        } finally {
+            $("#btn-modal-save").attr("disabled", false);
+        }
+    });
+
+    // **Event untuk Edit Room**
+    $(document).on("click", '[data-action="edit-room"]', async function () {
+        modal.show();
+        $("#main-modal .modal-body").html(`Fetching data...`);
+        const roomId = $(this).data("room-id");
+        const response = await $.get(`/room/${roomId}/edit`);
+        if (!response) return;
+        $("#main-modal .modal-title").text("Edit room");
+        $("#main-modal .modal-body").html(response.view);
+        $(".select2").select2();
+    });
+
+    // **Event Filter Data**
+    $(document).on("change", "#status, #type", function () {
+        datatable.ajax.reload();
+    });
 });

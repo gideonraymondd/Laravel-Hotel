@@ -5,3 +5,7 @@
 #page-content-wrapper {
     min-height: calc(100svh - 55px);
 }
+
+body {
+    font-family: 'Roboto', sans-serif;
+}

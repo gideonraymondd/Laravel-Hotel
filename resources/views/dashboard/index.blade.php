@@ -95,14 +95,14 @@
                             <canvas this-year="{{ Helper::thisYear() }}" this-month="{{ Helper::thisMonth() }}"
                                 id="visitors-chart" height="200" width="100%" class="chartjs-render-monitor"></canvas>
                         </div>
-                        <div class="d-flex flex-row justify-content-between">
+                        {{-- <div class="d-flex flex-row justify-content-between">
                             <span class="mr-2">
                                 <i class="fas fa-square text-primary"></i> {{ Helper::thisMonth() }}
                             </span>
                             <span>
                                 <i class="fas fa-square text-gray"></i> Last month
                             </span>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

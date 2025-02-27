@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
+use Illuminate\Database\QueryException;
 
 
 class CustomerController extends Controller
@@ -95,14 +96,44 @@ class CustomerController extends Controller
 
     public function update(Customer $customer, StoreCustomerRequest $request)
     {
-        $customer->update($request->all());
+        try {
+            // Validasi email tidak duplikat
+            $request->validate([
+                'email' => 'unique:users,email,' . $customer->user_id, // Menambahkan pengecekan unik untuk email
+            ]);
 
-        return redirect('customer')->with('success', 'customer '.$customer->name.' udpated!');
+            // Update customer data
+            $customer->update($request->all());
+
+            // Update email di tabel users berdasarkan user_id di customer
+            User::where('id', $customer->user_id)->update([
+                'email' => $request->email
+            ]);
+
+            return redirect('customer')->with('success', 'Customer '.$customer->name.' updated!');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Tangkap error jika email sudah digunakan
+            if ($e->errorInfo[1] == 1062) { // 1062 adalah kode error MySQL untuk duplicate entry
+                return redirect()->back()->withInput()->withErrors(['email' => 'Email ' . $request->email . ' sudah digunakan oleh user lain!']);
+            }
+
+            // Tangkap error lain
+            return redirect()->back()->withInput()->withErrors(['error' => 'Terjadi kesalahan saat update customer!']);
+        }
     }
+
 
     public function destroy(Customer $customer, ImageRepositoryInterface $imageRepository)
     {
         try {
+            // Cek apakah customer memiliki transaksi terkait
+            if ($customer->transactions()->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer '.$customer->name.' cannot be deleted! There are transactions related to this customer.'
+                ]);
+            }
+
             $user = User::find($customer->user->id);
             $avatar_path = public_path('img/user/'.$user->name.'-'.$user->id);
 
@@ -113,14 +144,18 @@ class CustomerController extends Controller
                 $imageRepository->destroy($avatar_path);
             }
 
-            return redirect('customer')->with('success', 'Customer '.$customer->name.' deleted!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer '.$customer->name.' deleted!'
+            ]);
         } catch (\Exception $e) {
-            $errorMessage = '';
-            if ($e->errorInfo[0] == '23000') {
-                $errorMessage = 'Data still connected to other tables';
-            }
+            $errorMessage = $e->errorInfo[0] == '23000' ? 'Data still connected to other tables' : '';
 
-            return redirect('customer')->with('failed', 'Customer '.$customer->name.' cannot be deleted! '.$errorMessage);
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer '.$customer->name.' cannot be deleted! '.$errorMessage
+            ]);
         }
     }
+
 }

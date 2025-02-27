@@ -15,7 +15,6 @@ class Room extends Model
         'number',
         'capacity',
         'price',
-        'view',
     ];
 
     public function type()
@@ -40,5 +39,10 @@ class Room extends Model
         }
 
         return asset('img/default/default-room.png');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'room_id');
     }
 }
