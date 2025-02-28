@@ -49,20 +49,20 @@
             <div class="card shadow-sm border h-100 w-100">
                 <div class="card-header">
                     <h4>Rooms</h4>
-                    <form action="{{ route('dashboard.index') }}" method="GET" class="mb-3">
+                    <form action="{{ route('transaction.index') }}" method="GET" class="mb-3">
                         <div class="form-group">
                             <label for="date">Pilih Tanggal:</label>
                             <input type="date" id="date" name="date" class="form-control" value="{{ $date }}"
                             min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
                         </div>
-                        <button type="submit" class="btn btn-primary mt-2">Cek Status Kamar</button>
+                        <button type="submit" class="btn mt-2" style="background-color: #c4985d; border-color: #c4985d; color: white;">Cek Status Kamar</button>
                     </form>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         @foreach ($allRooms as $room)
                             <div class="col-6 col-md-3 mb-4">
-                                <div class="card text-center">
+                                <div class="card text-center room-card" onclick="fetchRoomDetails({{ $room->id }})">
                                     <div class="card-body">
                                         <h5 class="card-title">No: {{ $room->number }}</h5>
                                         @if ($occupiedRooms->contains($room->id))
@@ -117,139 +117,47 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            const unexpiredTransactions = @json($unexpiredTransactions);
-            console.log('unexpiredTransactions:', unexpiredTransactions)
-
-            function fetchRoomDetails(transactionId) {
-                if (transactionId) {
-                    // Mendapatkan detail transaksi
-                    const transaction = unexpiredTransactions.find(t => t.id == transactionId);
-                    if (transaction) {
-                        document.getElementById('roomNumber').innerText = transaction.room.number || '-';
-                        document.getElementById('transactionStatus').innerText = transaction.status || '-';
-                        document.getElementById('roomStatus').innerText = transaction.room_status || '-'; // Ganti dengan atribut yang benar jika berbeda
-                    }
-                } else {
-                    // Kosongkan detail kamar jika tidak ada kamar yang dipilih
-                    document.getElementById('roomNumber').innerText = '-';
-                    document.getElementById('transactionStatus').innerText = '-';
-                    document.getElementById('roomStatus').innerText = '-';
-                }
-            }
-
-            function updateTransaction(newStatus) {
-                const roomNameSelect = document.getElementById('roomName');
-                const transactionId = roomNameSelect.value; // Make sure this variable is correctly defined
-
-                if (!transactionId) {
-                    alert('Silakan pilih nama kamar terlebih dahulu.');
-                    return;
-                }
-
-                const transaction = unexpiredTransactions.find(t => t.id == transactionId);
-
-                // Check conditions before updating
-                if (newStatus === 'check-in' && (transaction.room_status === 'check-out' || transaction.room_status === 'cleaned')) {
-                    alert('Tidak bisa Check In, kamar sudah Check Out atau sudah dibersihkan.');
-                    return;
-                }
-
-                if (newStatus === 'check-out' && transaction.room_status !== 'check-in') {
-                    alert('Tidak bisa Check Out, kamar belum Check In.');
-                    return;
-                }
-
-                // Proceed with the update
-                fetch(`/transaction/${transactionId}/change-room-status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ room_status: newStatus })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Refresh details
-                        fetchRoomDetails(transactionId);
-                        alert(data.success);
-                    } else {
-                        alert(data.error || 'Terjadi kesalahan saat memperbarui status kamar.');
-                    }
-                })
-                .catch(error => console.error('Error updating room status:', error));
-            }
-        </script>
-
-
-
     </div>
 
     <div class="row mb-3">
         {{-- Room Status --}}
         <div class="col-lg-12">
             <!-- Tabel Status Kamar -->
-            <div class="card shadow-sm border">
+            <div class="card shadow-sm border p-6">
                 <div class="card-header">
                     <h4>Room Status Today</h4>
-                    <!-- Tombol Filter -->
-                    <div class="btn-group mb-3">
-                        <a href="{{ route('transaction.index', ['filter' => 'check_in']) }}" class="btn btn-primary">Check-In</a>
-                        <a href="{{ route('transaction.index', ['filter' => 'check_out']) }}" class="btn btn-success">Check-Out</a>
-                        <a href="{{ route('transaction.index', ['filter' => 'cleaned']) }}" class="btn btn-warning">Cleaned</a>
-                    </div>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nomor Ruangan</th>
-                                <th>Status</th>
-                                <th>Tanggal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if ($filterData->isEmpty())
+
+                    <div class="row">
+                        <!-- Tombol Filter -->
+                        <div class="col-12 col-md-2 mb-3">
+                            <p class='form-label'>Status</p>
+                            <select class="form-select" id="filter-select">
+                                <option value="reservation" {{ $filter === 'reservation' ? 'selected' : '' }}>Reservation</option>
+                                <option value="check_in" {{ $filter === 'check_in' ? 'selected' : '' }}>Check-In</option>
+                                <option value="check_out" {{ $filter === 'check_out' ? 'selected' : '' }}>Check-Out</option>
+                                <option value="cleaned" {{ $filter === 'cleaned' ? 'selected' : '' }}>Cleaned</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <table class="table table-no-vertical-border">
+                            <thead>
                                 <tr>
-                                    <td colspan="5" class="text-center">Tidak ada data yang ditemukan.</td>
+                                    <th>#</th>
+                                    <th>NOMOR RUANGAN</th>
+                                    <th>NAMA PETUGAS</th>
+                                    <th>TANGGAL DAN JAM</th>
                                 </tr>
-                            @else
-                                @foreach ($filterData as $transaction)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $transaction->room->number }}</td>
-                                        <td>
-                                            @if ($filter === 'check_in')
-                                                <span class="badge badge-primary">Check-In</span>
-                                            @elseif ($filter === 'check_out')
-                                                <span class="badge badge-success">Check-Out</span>
-                                            @elseif ($filter === 'cleaned')
-                                                <span class="badge badge-warning">Cleaned</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($filter === 'check_in')
-                                                {{ $transaction->check_in }}
-                                            @elseif ($filter === 'check_out')
-                                                {{ $transaction->check_out }}
-                                            @elseif ($filter === 'cleaned')
-                                                {{ $transaction->cleaned_date }}
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @endif
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="room-table">
+                                @include('transaction.partials.room-table', ['filterData' => $filterData, 'filter' => $filter])
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="d-flex justify-content-center">
                         {{-- {{ $filterData->appends(request()->query())->links('vendor.pagination.simple-bootstrap-5') }} --}}
                         {{ $filterData->appends(request()->except('filter_page'))->links('vendor.pagination.simple-bootstrap-5') }}                    </div>
@@ -306,5 +214,34 @@
         }
 
     </style>
+
+    <script>
+        const allRooms = @json($allRooms);  // Ini adalah Paginator objek yang berisi 'data'
+        const occupiedRooms = @json($occupiedRooms);  // Ini adalah array ID kamar yang terisi
+
+        function fetchRoomDetails(roomId) {
+            if (roomId) {
+                // Menemukan data kamar berdasarkan ID
+                const room = allRooms.data.find(r => r.id == roomId);  // Mengakses 'data' di dalam Paginator
+
+                if (room) {
+                    // Menampilkan detail kamar
+                    document.getElementById('roomNumber').innerText = room.number || '-';
+                    document.getElementById('transactionStatus').innerText = room.transaction_status || '-';  // Pastikan atribut ini sesuai
+                    document.getElementById('roomStatus').innerText = occupiedRooms.includes(room.id) ? 'Terisi' : 'Kosong';  // Cek apakah kamar terisi
+                }
+            } else {
+                // Kosongkan detail kamar jika tidak ada kamar yang dipilih
+                document.getElementById('roomNumber').innerText = '-';
+                document.getElementById('transactionStatus').innerText = '-';
+                document.getElementById('roomStatus').innerText = '-';
+            }
+        }
+
+        function filterTransactions(value) {
+            window.location.href = "{{ route('transaction.index') }}?filter=" + value;
+        }
+
+    </script>
 
 @endsection
