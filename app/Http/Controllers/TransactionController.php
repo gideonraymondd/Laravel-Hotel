@@ -21,83 +21,120 @@ class TransactionController extends Controller
 
     public function index(Request $request)
     {
-        $transactions = $this->transactionRepository->getTransactionPagination($request)->simplePaginate(3);
+        // Declare
 
-        // Pindahan Dashboard :
+            $transactions = $this->transactionRepository->getTransactionPagination($request)->simplePaginate(3);
+
+            // Tentukan tanggal yang dipilih atau gunakan hari ini sebagai default
+            $selectedDate = Carbon::Today('Asia/Jakarta');
 
         // Room Status By Date
 
-        // Ambil tanggal dari input, gunakan hari ini jika tidak ada input
-        $date = $request->input('date', Carbon::now()->format('Y-m-d'));
+            // Ambil tanggal dari input, gunakan hari ini jika tidak ada input
+            $date = $request->input('date', Carbon::now()->format('Y-m-d'));
 
-        // Mengubah input tanggal menjadi objek Carbon sesuai timezone Jakarta
-        $selectedDate = Carbon::createFromFormat('Y-m-d', $date, 'Asia/Jakarta');
-        // Ambil semua transaksi yang statusnya "reserved" pada tanggal yang dipilih
-        $occupiedRooms = Transaction::where('status', 'Reservation')
-            ->where(function ($query) use ($selectedDate) {
-                $query->whereDate('check_in', '<=', $selectedDate)
-                    ->whereDate('check_out', '>=', $selectedDate);
-            })
-            ->pluck('room_id'); // Hanya ambil room_id yang sedang ditempati
+            // Mengubah input tanggal menjadi objek Carbon sesuai timezone Jakarta
+            $selectedDate = Carbon::createFromFormat('Y-m-d', $date, 'Asia/Jakarta');
+            // Ambil semua transaksi yang statusnya "reserved" pada tanggal yang dipilih
+            $occupiedRooms = Transaction::where('status', 'Reservation')
+                ->where(function ($query) use ($selectedDate) {
+                    $query->whereDate('check_in', '<=', $selectedDate)
+                        ->whereDate('check_out', '>=', $selectedDate);
+                })
+                ->pluck('room_id'); // Hanya ambil room_id yang sedang ditempati
 
-        // Ambil semua kamar dengan pagination
-        $allRooms = Room::paginate(8, ['*'], 'rooms_page');
+            // Ambil semua kamar dengan pagination
+            $allRooms = Room::paginate(8, ['*'], 'rooms_page');
 
-         //Check in check out dan cleaned by Date
+        // Room Status Today Filter
 
-        // // Ambil filter dari query string, default ke 'check_in'
-        // $filter = $request->input('filter', 'check_in');
-        // $today = Carbon::today()->format('Y-m-d');
-        // $filterData = null;;
+            // //  Filter
+            // $filter = $request->input('filter', 'reservation');
+            // $filterDurasi = $request->input('filter_durasi', null);
+            // $filterPembayaran = $request->input('filter_pembayaran', 'down_payment');
 
-        // $perPage = 10;
+            // $today = Carbon::today()->format('Y-m-d');
 
-        // // Filter data berdasarkan pilihan user
-        // if ($filter === 'check_in') {
-        //     $filterData = Transaction::whereDate('checked_in_time', $today)->get();
-        // } elseif ($filter === 'check_out') {
-        //     $filterData = Transaction::whereDate('checked_out_time', $today)->get();
-        // } elseif ($filter === 'cleaned') {
-        //     $filterData = Transaction::whereDate('cleaned_time', $today)->get();
-        // }
 
-        $filter = $request->input('filter', 'check_in');
-        $today = Carbon::today()->format('Y-m-d');
+            // if ($filter === 'check_in') {
+            //     $filterData = Transaction::whereDate('checked_in_time', $today)
+            //         ->with('room') // Pastikan relasi room dimuat
+            //         ->paginate(10, ['*'], 'check_in_page') // Gunakan custom key 'check_in_page'
+            //         ->appends($request->all()); // Menjaga query string saat pagination
+            // } elseif ($filter === 'check_out') {
+            //     $filterData = Transaction::whereDate('checked_out_time', $today)
+            //         ->with('room') // Pastikan relasi room dimuat
+            //         ->paginate(10, ['*'], 'check_out_page') // Gunakan custom key 'check_out_page'
+            //         ->appends($request->all());
+            // } elseif ($filter === 'cleaned') {
+            //     $filterData = Transaction::whereDate('cleaned_time', $today)
+            //         ->with('room') // Pastikan relasi room dimuat
+            //         ->paginate(10, ['*'], 'cleaned_page') // Gunakan custom key 'cleaned_page'
+            //         ->appends($request->all());
+            // } else {
+            //     // Default: Tampilkan transaksi dengan status 'Reservation'
+            //     $filterData = Transaction::where('status', 'Reservation')
+            //         ->with('room')
+            //         ->paginate(10, ['*'], 'reservation_page')
+            //         ->appends($request->all());
+            // }
 
-        if ($filter === 'check_in') {
-            $filterData = Transaction::whereDate('checked_in_time', $today)
-                ->with('room') // Pastikan relasi room dimuat
-                ->paginate(10, ['*'], 'check_in_page') // Gunakan custom key 'check_in_page'
+            // if ($request->ajax()) {
+            //     return view('transaction.partials.room-table', compact('filterData', 'filter'));
+            // }
+
+            // Filter
+            $filter = $request->input('filter', 'reservation');
+            $filterDurasi = $request->input('filter_durasi', null);
+            $filterPembayaran = $request->input('filter_pembayaran', 'down_payment');
+
+            $today = Carbon::today()->format('Y-m-d');
+
+            $query = Transaction::with('room'); // Pastikan relasi room dimuat
+
+            // Filter berdasarkan status filter
+            if ($filter === 'check_in') {
+                $query->whereDate('checked_in_time', $today);
+            } elseif ($filter === 'check_out') {
+                $query->whereDate('checked_out_time', $today);
+            } elseif ($filter === 'cleaned') {
+                $query->whereDate('cleaned_time', $today);
+            } else {
+                // Default: Tampilkan transaksi dengan status 'Reservation'
+                $query->where('status', 'Reservation');
+            }
+
+            // Filter berdasarkan durasi (jika ada)
+            // if ($filterDurasi) {
+            //     // Misalnya durasi berupa angka (jumlah hari) atau rentang waktu tertentu
+            //     // Anda dapat menambahkan kondisi seperti berikut
+            //     $query->where('durasi', $filterDurasi); // Atau sesuaikan dengan kebutuhan durasi
+            // }
+
+            // // Filter berdasarkan pembayaran (jika ada)
+            // if ($filterPembayaran) {
+            //     $query->where('pembayaran_status', $filterPembayaran); // Pastikan kolom sesuai dengan field di database
+            // }
+
+            // Melakukan pagination dengan query yang telah difilter
+            $filterData = $query->paginate(10, ['*'], "{$filter}_page")
                 ->appends($request->all()); // Menjaga query string saat pagination
-        } elseif ($filter === 'check_out') {
-            $filterData = Transaction::whereDate('checked_out_time', $today)
-                ->with('room') // Pastikan relasi room dimuat
-                ->paginate(10, ['*'], 'check_out_page') // Gunakan custom key 'check_out_page'
-                ->appends($request->all());
-        } elseif ($filter === 'cleaned') {
-            $filterData = Transaction::whereDate('cleaned_time', $today)
-                ->with('room') // Pastikan relasi room dimuat
-                ->paginate(10, ['*'], 'cleaned_page') // Gunakan custom key 'cleaned_page'
-                ->appends($request->all());
-        } else {
-            $filterData = Transaction::with('room')
-                ->paginate(10, ['*'], 'default_page') // Gunakan custom key 'default_page' untuk default
-                ->appends($request->all());
-        }
 
-        // Tentukan tanggal yang dipilih atau gunakan hari ini sebagai default
-        $selectedDate = Carbon::Today('Asia/Jakarta');
+            // Mengembalikan view jika request AJAX
+            if ($request->ajax()) {
+                return view('transaction.partials.room-table', compact('filterData', 'filter'));
+            }
+        // Quick Action
 
-        // Query untuk mengambil transaksi yang belum expired berdasarkan check_in dan check_out
-        $unexpiredTransactions = Transaction::where('status', 'Reservation')
-            ->where(function ($query) use ($selectedDate) {
-                $query->whereDate('check_in', '<=', $selectedDate)
-                    ->whereDate('check_out', '>=', $selectedDate);
-            })
-            ->get();
+            // Query untuk mengambil transaksi yang belum expired berdasarkan check_in dan check_out
+            $unexpiredTransactions = Transaction::where('status', 'Reservation')
+                ->where(function ($query) use ($selectedDate) {
+                    $query->whereDate('check_in', '<=', $selectedDate)
+                        ->whereDate('check_out', '>=', $selectedDate);
+                })
+                ->get();
 
-
-
+        // Return data ke frontend
         return view('transaction.index', [
             'transactions' => $transactions,
             'occupiedRooms' => $occupiedRooms, // Kamar yang sedang terisi
