@@ -9,6 +9,27 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        .dataTables_wrapper .dataTables_paginate .page-link {
+            color: #c4985d !important;
+        }
+
+        /* Warna tombol dan teks saat aktif atau diklik */
+        .dataTables_wrapper .dataTables_paginate .page-item.active .page-link,
+        .dataTables_wrapper .dataTables_paginate .page-link:focus,
+        .dataTables_wrapper .dataTables_paginate .page-link:active {
+            background-color: #c4985d !important;
+            border-color: #c4985d !important;
+            color: white !important;
+        }
+
+        /* Warna tombol saat hover */
+        .dataTables_wrapper .dataTables_paginate .page-link:hover {
+            background-color: #d8a677 !important;
+            border-color: #d8a677 !important;
+            color: white !important;
+        }
+
     </style>
 @endsection
 @section('content')
