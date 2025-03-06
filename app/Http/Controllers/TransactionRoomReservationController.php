@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\Room;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Type;
 use App\Notifications\NewRoomReservationDownPayment;
 use App\Repositories\Interface\CustomerRepositoryInterface;
 use App\Repositories\Interface\PaymentRepositoryInterface;
@@ -62,19 +63,40 @@ class TransactionRoomReservationController extends Controller
         $stayFrom = $request->check_in;
         $stayUntil = $request->check_out;
 
-        $occupiedRoomId = $this->getOccupiedRoomID($request->check_in, $request->check_out);
+        // Mulai query dengan Room
+        $query = Room::query();
 
-        $rooms = $this->reservationRepository->getUnocuppiedroom($request, $occupiedRoomId);
-        $roomsCount = $this->reservationRepository->countUnocuppiedroom($request, $occupiedRoomId);
+        // Filter berdasarkan room_type
+        if ($request->has('room_type') && $request->room_type != '') {
+            $query->where('type_id', $request->room_type);
+        }
+
+        // Filter berdasarkan capacity (level)
+        if ($request->has('capacity') && $request->capacity != '') {
+            $capacity = $request->capacity;
+            $query->where('number', 'like', "{$capacity}%");
+        }
+
+
+        // Ambil daftar room yang sudah difilter
+        $rooms = $query->with('type')->paginate(4);  // Gunakan paginate dan eager load relasi 'type'
+
+        // Menggunakan appends untuk mempertahankan query string di URL
+        $rooms->appends(request()->except('rooms_page')); // Pastikan 'rooms_page' tidak terikut
+
+        $roomTypes = Type::all();  // Ambil semua tipe kamar
 
         return view('transaction.reservation.chooseRoom', [
             'customer' => $customer,
             'rooms' => $rooms,
             'stayFrom' => $stayFrom,
             'stayUntil' => $stayUntil,
-            'roomsCount' => $roomsCount,
+            'roomTypes' => $roomTypes
         ]);
     }
+
+
+
 
     public function confirmation(Customer $customer, Room $room, $stayFrom, $stayUntil)
     {
