@@ -101,7 +101,8 @@ class TransactionController extends Controller
                 $query->whereDate('cleaned_time', $today);
             } else {
                 // Default: Tampilkan transaksi dengan status 'Reservation'
-                $query->where('status', 'Reservation');
+                $query->whereDate('check_in', $today)
+                    ->where('status', 'Reservation');
             }
 
             // Filter berdasarkan durasi (jika ada)
