@@ -5,7 +5,7 @@
                 <ul class="progress-indicator m-4">
                     <li
                         class="{{ Route::currentRouteName() == 'transaction.reservation.createIdentity' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.pickFromCustomer' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.viewCountPerson' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.chooseRoom' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.confirmation' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.payDownPayment' ? 'completed' : '' }}">
-                        <span class="bubble"></span> Identity Card
+                        <span class="bubble"></span> Customer Detail
                     </li>
                     <li
                         class="{{ Route::currentRouteName() == 'transaction.reservation.viewCountPerson' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.chooseRoom' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.confirmation' ? 'completed' : '' }} {{ Route::currentRouteName() == 'transaction.reservation.payDownPayment' ? 'completed' : '' }}">
@@ -24,3 +24,24 @@
         </div>
     </div>
 </div>
+
+<style>
+    .progress-indicator li.completed {
+        color: #c4985d; /* Ubah warna teks */
+    }
+
+    .progress-indicator li.completed .bubble {
+        background: #c4985d; /* Ubah warna latar belakang bubble */
+        color: #fff; /* Ubah warna teks di dalam bubble jika ada */
+        border-color: #c4985d; /* Ubah warna border bubble */
+    }
+
+    .progress-indicator > li.completed .bubble,
+    .progress-indicator > li.completed .bubble:after,
+    .progress-indicator > li.completed .bubble:before {
+        background-color: #c4985d; /* Ganti dengan warna yang diinginkan */
+        border-color: #c4985d; /* Ganti border dengan warna yang diinginkan */
+    }
+
+</style>
+
