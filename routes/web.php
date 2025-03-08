@@ -48,6 +48,7 @@ Route::group(['middleware' => ['auth', 'checkRole:Super,Admin']], function () {
         Route::get('/{customer}/chooseRoom', [TransactionRoomReservationController::class, 'chooseRoom'])->name('chooseRoom');
         Route::get('/{customer}/{room}/{from}/{to}/confirmation', [TransactionRoomReservationController::class, 'confirmation'])->name('confirmation');
         Route::post('/{customer}/{room}/payDownPayment', [TransactionRoomReservationController::class, 'payDownPayment'])->name('payDownPayment');
+
     });
 
     Route::resource('customer', CustomerController::class);
@@ -105,6 +106,8 @@ Route::post('/transaction/{transaction}/change-room-status', [TransactionControl
 // Transaction
 Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
 Route::get('/transaction/room-details/{transactionId}', [TransactionController::class, 'getRoomDetails']);
+Route::post('/transaction/update-payment-status', [TransactionController::class, 'updatePaymentStatus'])->name('transaction.updatePaymentStatus');
+
 
 // Group Booking
 Route::get('/group-booking', [TransactionController::class, 'showGroupBooking'])->name('group.booking.index');

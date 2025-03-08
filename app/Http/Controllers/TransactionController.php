@@ -446,6 +446,34 @@ class TransactionController extends Controller
         return view('transaction.group_booking_payment', compact('transactions' ,  'transactionId'));
     }
 
+    public function updatePaymentStatus(Request $request)
+    {
+        // Cari transaksi berdasarkan ID transaksi
+        $transaction = Transaction::find($request->id);
+
+        // Cek apakah transaksi ada dan memiliki pembayaran
+        if ($transaction && $transaction->payment->isNotEmpty()) {
+            // Ambil pembayaran pertama
+            $payment = $transaction->payment->first();
+
+            // Misalnya, harga kamar diambil dari Room yang terkait dengan transaksi
+            $roomPrice = $transaction->room->price;  // Pastikan ada relasi dengan Room dan atribut price
+
+            // Update status pembayaran menjadi "Paid"
+            $payment->status = 'Success';
+
+            // Update harga yang dibayar sesuai dengan harga kamar
+            $payment->price = $roomPrice;
+
+            // Simpan perubahan pada pembayaran
+            $payment->save();
+
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false]);
+    }
+
 
 
 
