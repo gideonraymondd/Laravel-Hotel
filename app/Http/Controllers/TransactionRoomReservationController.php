@@ -63,28 +63,31 @@ class TransactionRoomReservationController extends Controller
         $stayFrom = $request->check_in;
         $stayUntil = $request->check_out;
 
-        // Mulai query dengan Room
-        $query = Room::query();
+        // Ambil daftar ID kamar yang sudah terisi
+        $occupiedRoomId = $this->getOccupiedRoomID($stayFrom, $stayUntil);
+
+        // Mulai query dengan Room hanya untuk kamar yang tidak terisi
+        $query = Room::whereNotIn('id', $occupiedRoomId);
 
         // Filter berdasarkan room_type
         if ($request->has('room_type') && $request->room_type != '') {
             $query->where('type_id', $request->room_type);
         }
 
-        // Filter berdasarkan capacity (level)
+        // Filter berdasarkan nomor depan kamar (sebelumnya capacity)
         if ($request->has('capacity') && $request->capacity != '') {
             $capacity = $request->capacity;
             $query->where('number', 'like', "{$capacity}%");
         }
 
-
-        // Ambil daftar room yang sudah difilter
+        // Ambil daftar kamar yang tersedia
         $rooms = $query->with('type')->paginate(4);  // Gunakan paginate dan eager load relasi 'type'
 
         // Menggunakan appends untuk mempertahankan query string di URL
-        $rooms->appends(request()->except('rooms_page')); // Pastikan 'rooms_page' tidak terikut
+        $rooms->appends(request()->except('rooms_page'));
 
-        $roomTypes = Type::all();  // Ambil semua tipe kamar
+        // Ambil semua tipe kamar
+        $roomTypes = Type::all();
 
         return view('transaction.reservation.chooseRoom', [
             'customer' => $customer,
@@ -94,6 +97,7 @@ class TransactionRoomReservationController extends Controller
             'roomTypes' => $roomTypes
         ]);
     }
+
 
 
 
