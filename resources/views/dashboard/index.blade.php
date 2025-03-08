@@ -223,23 +223,18 @@
                         <table class="table table-hover table-striped">
                             <thead>
                                 <tr>
-                                    <th></th>
                                     <th>Name</th>
                                     <th>Room</th>
-                                    <th class="text-center">Stay</th>
+                                    <th >Stay</th>
                                     <th>Day Left</th>
                                     <th>Debt</th>
-                                    <th class="text-center">Status</th>
+                                    <th >Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($transactions as $transaction)
                                     <tr>
-                                        <td>
-                                            <img src="{{ $transaction->customer->user->getAvatar() }}"
-                                                class="rounded-circle img-thumbnail" width="40" height="40"
-                                                alt="">
-                                        </td>
+                                        
                                         <td>
                                             <a
                                                 href="{{ route('customer.show', ['customer' => $transaction->customer->id]) }}">
@@ -263,13 +258,8 @@
                                         <td>
                                             <span
                                                 class="justify-content-center badge {{ $transaction->getTotalPrice() - $transaction->getTotalPayment() == 0 ? 'bg-success' : 'bg-warning' }}">
-                                                {{ $transaction->getTotalPrice() - $transaction->getTotalPayment() == 0 ? 'Success' : 'Progress' }}
+                                                {{ $transaction->getTotalPrice() - $transaction->getTotalPayment() == 0 ? 'Success' : 'Unfinish Payment' }}
                                             </span>
-                                            @if (Helper::getDateDifference(now(), $transaction->check_out) < 1)
-                                                <span class="justify-content-center badge bg-danger">
-                                                    must finish payment
-                                                </span>
-                                            @endif
                                         </td>
                                     </tr>
                                 @empty
