@@ -104,7 +104,6 @@
                     <div class="room-details mt-4">
                         <h5>Detail Kamar</h5>
                         <p>Nomor Kamar: <span id="roomNumber">-</span></p>
-                        <p>Status Transaksi: <span id="transactionStatus">-</span></p>
                         <p>Status Kamar: <span id="roomStatus">-</span></p>
                     </div>
 
@@ -151,6 +150,8 @@
                                     <th>NOMOR RUANGAN</th>
                                     <th>NAMA PETUGAS</th>
                                     <th>TANGGAL DAN JAM</th>
+                                    <th>STATUS PEMBAYARAN</th>
+                                    <th>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody id="room-table">
@@ -227,13 +228,11 @@
                 if (room) {
                     // Menampilkan detail kamar
                     document.getElementById('roomNumber').innerText = room.number || '-';
-                    document.getElementById('transactionStatus').innerText = room.transaction_status || '-';  // Pastikan atribut ini sesuai
                     document.getElementById('roomStatus').innerText = occupiedRooms.includes(room.id) ? 'Terisi' : 'Kosong';  // Cek apakah kamar terisi
                 }
             } else {
                 // Kosongkan detail kamar jika tidak ada kamar yang dipilih
                 document.getElementById('roomNumber').innerText = '-';
-                document.getElementById('transactionStatus').innerText = '-';
                 document.getElementById('roomStatus').innerText = '-';
             }
         }
